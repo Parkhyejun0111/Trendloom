@@ -76,3 +76,42 @@ export const taggingSchema = z.object({
 });
 
 export type Tagging = z.infer<typeof taggingSchema>;
+
+/** 스타일 보드 → 시즌 무드 브리프 */
+export const styleBoardSchema = z.object({
+  headline: z.string().describe("이 스타일 방향을 한 줄로 요약한 무드 헤드라인"),
+  moodKeywords: z
+    .array(z.string())
+    .describe("보드 전체를 관통하는 무드 키워드 5~7개 (한글, 짧은 명사형)"),
+  palette: z
+    .array(
+      z.object({
+        name: z.string().describe("컬러명. 예: 딥 차콜, 소프트 크림"),
+        hex: z
+          .string()
+          .describe('#RRGGBB 형식 6자리 헥스코드. 예: "#2B2B2E"'),
+        role: z
+          .enum(["메인", "서브", "포인트"])
+          .describe("시즌 팔레트 내 역할"),
+      }),
+    )
+    .describe("시즌 컬러 팔레트 4~6개"),
+  silhouettes: z.array(z.string()).describe("핵심 실루엣/핏 3~4개"),
+  materials: z.array(z.string()).describe("핵심 소재 3~4개"),
+  details: z.array(z.string()).describe("눈에 띄는 디테일 요소 3~4개"),
+  styling: z
+    .array(
+      z.object({
+        title: z.string().describe("코디 제안 이름"),
+        items: z.array(z.string()).describe("구성 아이템 3~4개"),
+        occasion: z.string().describe("착용 상황"),
+      }),
+    )
+    .describe("스타일링 조합 제안 3개"),
+  searchExpansion: z
+    .array(z.string())
+    .describe("이 방향을 더 파고들 때 쓸 확장 검색 키워드 6~8개"),
+  mdNote: z.string().describe("MD가 상품 기획에 바로 옮길 실행 포인트 2~3문장"),
+});
+
+export type StyleBoard = z.infer<typeof styleBoardSchema>;

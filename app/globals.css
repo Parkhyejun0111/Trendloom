@@ -1,14 +1,30 @@
 @import "tailwindcss";
 
 @theme {
-  --color-ink: #0b0b0c;
-  --color-ink-2: #131316;
-  --color-line: #26262b;
-  --color-line-2: #35353d;
-  --color-muted: #8b8b95;
-  --color-paper: #ecece8;
-  --color-accent: #d8ff3e;
-  --color-accent-2: #ff5c39;
+  /* ── 서피스 (모던 블랙) ─────────────────────────────── */
+  --color-ink: #08080a;
+  --color-ink-2: #141417;
+  --color-ink-3: #1c1c21;
+  --color-line: #26262d;
+  --color-line-2: #35353f;
+  --color-muted: #85858f;
+  --color-paper: #f4f4f6;
+
+  /* ── 브랜드 퍼플 포인트 ─────────────────────────────── */
+  --color-accent: #a78bfa;
+  --color-accent-deep: #7c5cf0;
+  --color-accent-soft: #c9b8ff;
+  --color-accent-2: #ff6b6b;
+
+  /* ── 검증된 카테고리 팔레트 (dark, surface #141417) ──
+     order: violet → aqua → blue → yellow → magenta
+     adjacent CVD ΔE 13.2 · normal-vision ΔE 19.3 · contrast all ≥ 3:1 */
+  --color-s1: #9085e9;
+  --color-s2: #199e70;
+  --color-s3: #3987e5;
+  --color-s4: #c98500;
+  --color-s5: #d55181;
+
   --font-sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont,
     "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", system-ui, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
@@ -25,12 +41,24 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* 페이지 상단 퍼플 글로우 — 무드보드의 블랙+퍼플 대비 */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: 520px;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(60% 100% at 18% 0%, rgba(124, 92, 240, 0.16), transparent 70%),
+    radial-gradient(45% 100% at 88% 4%, rgba(167, 139, 250, 0.09), transparent 70%);
+}
+
 ::selection {
   background: var(--color-accent);
   color: var(--color-ink);
 }
 
-/* 얇은 스크롤바 */
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
@@ -40,11 +68,41 @@ body {
   border-radius: 99px;
   border: 3px solid var(--color-ink);
 }
+::-webkit-scrollbar-thumb:hover {
+  background: #4a4a57;
+}
+
+/* ── 입체감 유틸 ─────────────────────────────────────── */
+
+/* 카드: 상단 하이라이트 + 바닥 그림자로 살짝 떠 있게 */
+.elev {
+  background: linear-gradient(180deg, #17171b 0%, #131316 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.045),
+    0 1px 2px rgba(0, 0, 0, 0.6),
+    0 12px 32px -12px rgba(0, 0, 0, 0.85);
+}
+
+.elev-hi {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 2px 4px rgba(0, 0, 0, 0.5),
+    0 20px 48px -16px rgba(124, 92, 240, 0.28);
+}
+
+/* 퍼플 글로우 링 — 포커스/활성 상태 */
+.ring-glow {
+  box-shadow:
+    0 0 0 1px rgba(167, 139, 250, 0.5),
+    0 0 24px -4px rgba(124, 92, 240, 0.55);
+}
+
+/* ── 애니메이션 ──────────────────────────────────────── */
 
 @keyframes fade-up {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
@@ -53,7 +111,7 @@ body {
 }
 
 .fade-up {
-  animation: fade-up 0.35s ease both;
+  animation: fade-up 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 @keyframes shimmer {
@@ -74,8 +132,91 @@ body {
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(255, 255, 255, 0.06),
+    rgba(167, 139, 250, 0.13),
     transparent
   );
   animation: shimmer 1.6s infinite;
+}
+
+/* 선 그래프 그리기 */
+@keyframes draw {
+  from {
+    stroke-dashoffset: var(--len);
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.draw {
+  stroke-dasharray: var(--len);
+  animation: draw 1s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* 바 성장 */
+@keyframes grow-x {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.grow-x {
+  transform-origin: left center;
+  animation: grow-x 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* 마스코트 부유 */
+@keyframes bob {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-6px) rotate(-1.2deg);
+  }
+}
+
+.bob {
+  animation: bob 4.5s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fade-up,
+  .draw,
+  .grow-x,
+  .bob,
+  .shimmer::after {
+    animation: none !important;
+  }
+  .draw {
+    stroke-dasharray: none;
+  }
+}
+
+/* ── 핀터레스트형 매스너리 ───────────────────────────── */
+.masonry {
+  column-gap: 16px;
+  columns: 2;
+}
+@media (min-width: 640px) {
+  .masonry {
+    columns: 3;
+  }
+}
+@media (min-width: 1024px) {
+  .masonry {
+    columns: 4;
+  }
+}
+@media (min-width: 1400px) {
+  .masonry {
+    columns: 5;
+  }
+}
+.masonry > * {
+  break-inside: avoid;
+  margin-bottom: 16px;
 }
