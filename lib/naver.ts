@@ -176,10 +176,27 @@ const stripTags = (s: string) =>
 /* 2. 이미지 검색 — 스타일 레퍼런스 보드                                 */
 /* ------------------------------------------------------------------ */
 
+/**
+ * 네이버 썸네일 프록시(search.pstatic.net/sunny)의 크기 파라미터를 키운다.
+ *
+ * 검색 API 가 주는 기본값은 type=b150 — 실제로 100×150 이라 보드 컬럼(약 250px)에
+ * 늘려 놓으면 뭉갠다. 실측으로 확인한 상한이 a340(340×510, 15~43KB)이고
+ * b500·a600·b800·f500_500 은 모두 404 다.
+ */
+const THUMB_TYPE = "a340";
+
+export function upscaleThumbnail(url: string): string {
+  if (!url || !url.includes("search.pstatic.net")) return url;
+  if (/[?&]type=/.test(url)) {
+    return url.replace(/([?&])type=[^&]*/, `$1type=${THUMB_TYPE}`);
+  }
+  return `${url}${url.includes("?") ? "&" : "?"}type=${THUMB_TYPE}`;
+}
+
 export type StyleImage = {
-  /** 원본 페이지/이미지 URL */
+  /** 원본 이미지 URL — 클릭 시 원본, 고화질 보기에서도 쓴다 */
   link: string;
-  /** search.pstatic.net 썸네일 (next/image 허용 호스트) */
+  /** search.pstatic.net 썸네일 (보드 격자용) */
   thumbnail: string;
   title: string;
   width: number;
@@ -235,7 +252,7 @@ export async function fetchStyleImages(
       const images: StyleImage[] = (json.items ?? [])
         .map((it: Record<string, string>) => ({
           link: it.link,
-          thumbnail: it.thumbnail,
+          thumbnail: upscaleThumbnail(it.thumbnail),
           title: stripTags(it.title),
           width: Number(it.sizewidth) || 0,
           height: Number(it.sizeheight) || 0,

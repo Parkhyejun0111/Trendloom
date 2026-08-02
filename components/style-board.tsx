@@ -25,6 +25,20 @@ const PRESETS = [
 /** 보드 카드 하나를 가리키는 안정적인 키 (핀 선택 상태 유지용) */
 const idOf = (im: StyleImage, i: number) => im.thumbnail || `${im.query}-${i}`;
 
+/**
+ * 격자에 실을 이미지 주소.
+ *
+ * 기본은 썸네일(a340 · 340×510 · 15~43KB). 고화질 모드에서는 원본을 쓰는데,
+ * 원본은 600×800~1000×1000 이지만 장당 200~800KB 라 36장이면 수십 MB 다.
+ * 그래서 기본값이 아니라 사용자가 켤 때만 쓴다.
+ *
+ * http 원본은 https 페이지에서 혼합 콘텐츠로 차단되니 아예 시도하지 않는다.
+ */
+function srcFor(im: StyleImage, hiRes: boolean, degraded: boolean) {
+  if (!hiRes || degraded) return im.thumbnail;
+  return im.link?.startsWith("https://") ? im.link : im.thumbnail;
+}
+
 export function StyleBoard() {
   const [input, setInput] = useState("");
   const [keywords, setKeywords] = useState<string[]>(["오버핏 코트", "와이드 데님"]);
@@ -35,6 +49,9 @@ export function StyleBoard() {
   const [pinned, setPinned] = useState<Set<string>>(new Set());
   const [broken, setBroken] = useState<Set<string>>(new Set());
   const [copied, setCopied] = useState<string | null>(null);
+  /** 원본 로딩 실패 시 썸네일로 되돌린 카드 */
+  const [fellBack, setFellBack] = useState<Set<string>>(new Set());
+  const [hiRes, setHiRes] = useState(false);
 
   const {
     object: brief,
@@ -242,6 +259,24 @@ export function StyleBoard() {
               {n}
             </span>
           ))}
+
+          {board.source === "naver" && (
+            <label className="ml-auto flex cursor-pointer items-center gap-2 text-xs text-muted">
+              <input
+                type="checkbox"
+                checked={hiRes}
+                onChange={(e) => {
+                  setHiRes(e.target.checked);
+                  setFellBack(new Set());
+                }}
+                className="size-3.5 accent-[#a78bfa]"
+              />
+              고화질로 보기
+              <span className="text-[11px] text-muted/70">
+                (원본 · 장당 200~800KB)
+              </span>
+            </label>
+          )}
         </div>
       )}
 
@@ -290,14 +325,22 @@ export function StyleBoard() {
                     className="block"
                   >
                     <Image
-                      src={im.thumbnail}
+                      src={srcFor(im, hiRes, fellBack.has(id))}
                       alt={im.title}
                       width={im.width || 600}
                       height={im.height || 800}
                       unoptimized
                       loading="lazy"
                       referrerPolicy="no-referrer"
-                      onError={() => setBroken((prev) => new Set(prev).add(id))}
+                      onError={() => {
+                        // 원본이 막히면(핫링크 차단 등) 썸네일로 한 번 물러서고,
+                        // 썸네일까지 실패하면 그때 카드를 뺀다
+                        if (srcFor(im, hiRes, fellBack.has(id)) !== im.thumbnail) {
+                          setFellBack((prev) => new Set(prev).add(id));
+                        } else {
+                          setBroken((prev) => new Set(prev).add(id));
+                        }
+                      }}
                       className="w-full bg-ink-2 object-cover transition duration-300 group-hover:scale-[1.03]"
                       style={{ aspectRatio: String(ratio) }}
                     />
