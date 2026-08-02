@@ -1,5 +1,5 @@
 import { createTextStreamResponse, Output, streamText, toTextStream } from "ai";
-import { anthropic } from "@ai-sdk/anthropic";
+import { hasModelKey, MISSING_KEY_MESSAGE, model } from "@/lib/ai";
 import { insightSchema } from "@/lib/schemas";
 import type { MarketSnapshot, TrendSeries } from "@/lib/naver";
 
@@ -84,20 +84,14 @@ const SYSTEM = `당신은 국내 패션 이커머스 브랜드의 시니어 MD�
 - 데이터 출처가 데모인 경우에도 분석 방법론은 동일하게 적용하되, headline 끝에 "(데모 데이터 기준)"을 붙인다.`;
 
 export async function POST(req: Request) {
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return Response.json(
-      {
-        error:
-          "ANTHROPIC_API_KEY 가 설정되지 않았습니다. .env.local 에 키를 넣고 dev 서버를 재시작하세요.",
-      },
-      { status: 500 },
-    );
+  if (!hasModelKey()) {
+    return Response.json({ error: MISSING_KEY_MESSAGE }, { status: 500 });
   }
 
   const payload = await req.json();
 
   const result = streamText({
-    model: anthropic("claude-opus-5"),
+    model: model(),
     // Opus 5 는 thinking 이 기본 on 이라 max_tokens 를 thinking 과 나눠 쓴다.
     // 라인업 5개까지 담기려면 넉넉한 상한이 필요하다.
     maxOutputTokens: 16000,

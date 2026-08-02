@@ -1,5 +1,5 @@
 import { createTextStreamResponse, Output, streamText, toTextStream } from "ai";
-import { anthropic } from "@ai-sdk/anthropic";
+import { hasModelKey, MISSING_KEY_MESSAGE, model } from "@/lib/ai";
 import { taggingSchema } from "@/lib/schemas";
 
 export const maxDuration = 120;
@@ -16,14 +16,8 @@ const SYSTEM = `당신은 국내 패션 이커머스의 시니어 MD 겸 상품�
 - 모든 출력은 한국어.`;
 
 export async function POST(req: Request) {
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return Response.json(
-      {
-        error:
-          "ANTHROPIC_API_KEY 가 설정되지 않았습니다. .env.local 에 키를 넣고 dev 서버를 재시작하세요.",
-      },
-      { status: 500 },
-    );
+  if (!hasModelKey()) {
+    return Response.json({ error: MISSING_KEY_MESSAGE }, { status: 500 });
   }
 
   const { image, mediaType, hint } = (await req.json()) as {
@@ -33,7 +27,7 @@ export async function POST(req: Request) {
   };
 
   const result = streamText({
-    model: anthropic("claude-opus-5"),
+    model: model(),
     // Opus 5 는 thinking 이 기본 on 이라 max_tokens 를 thinking 과 나눠 쓴다.
     maxOutputTokens: 16000,
     system: SYSTEM,
