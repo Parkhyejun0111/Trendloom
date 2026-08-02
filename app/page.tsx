@@ -68,9 +68,9 @@ export default function Page() {
       {tab === "tagger" && <ProductTagger />}
 
       <footer className="mt-16 border-t border-line pt-6 text-xs leading-relaxed text-muted">
-        데이터: 네이버 데이터랩 쇼핑인사이트 · 네이버 쇼핑 검색 API · 네이버 이미지 검색 API ·
-        분석: Claude (Vercel AI Gateway). AI 출력은 의사결정 보조용이며 발주 전 실제 매출·원가·재고
-        데이터로 검증하세요.
+        데이터: 네이버 데이터랩 쇼핑인사이트 · 네이버 이미지 검색 API · 분석: Claude.
+        네이버 쇼핑 검색 API 종료로 가격·브랜드 점유 지표는 제공하지 않습니다. AI 출력은 의사결정
+        보조용이며 발주 전 실제 매출·원가·재고 데이터로 검증하세요.
       </footer>
     </main>
   );

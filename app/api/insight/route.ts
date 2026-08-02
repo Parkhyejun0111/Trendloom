@@ -1,11 +1,9 @@
 import { createTextStreamResponse, Output, streamText, toTextStream } from "ai";
 import { hasModelKey, MISSING_KEY_MESSAGE, model } from "@/lib/ai";
 import { insightSchema } from "@/lib/schemas";
-import type { MarketSnapshot, TrendSeries } from "@/lib/naver";
+import type { TrendSeries } from "@/lib/naver";
 
 export const maxDuration = 120;
-
-const won = (n: number) => `${n.toLocaleString("ko-KR")}원`;
 
 function buildContext(payload: {
   keywords: string[];
@@ -13,7 +11,6 @@ function buildContext(payload: {
   segmentLabel: string;
   source: string;
   trend: TrendSeries[];
-  markets: MarketSnapshot[];
 }) {
   const trendBlock = payload.trend
     .map((s) => {
@@ -31,32 +28,6 @@ function buildContext(payload: {
     })
     .join("\n");
 
-  const marketBlock = payload.markets
-    .map((m) => {
-      const brands = m.brandShare
-        .slice(0, 6)
-        .map((b) => `${b.name}(${b.share}%)`)
-        .join(", ");
-      const cats = m.categoryShare
-        .slice(0, 5)
-        .map((c) => `${c.name}(${c.share}%)`)
-        .join(", ");
-      return [
-        `- 키워드 "${m.keyword}" 실판매 상품 스냅샷`,
-        `  검색 결과 총 상품수: ${m.total.toLocaleString("ko-KR")}개 (상위 ${
-          m.items.length
-        }개 표본 분석)`,
-        `  가격 분포: 최저 ${won(m.price.min)} / 하위25% ${won(
-          m.price.p25,
-        )} / 중앙 ${won(m.price.median)} / 상위25% ${won(m.price.p75)} / 최고 ${won(
-          m.price.max,
-        )} / 평균 ${won(m.price.avg)}`,
-        `  상위 브랜드 점유: ${brands}`,
-        `  카테고리 분포: ${cats}`,
-      ].join("\n");
-    })
-    .join("\n");
-
   return [
     `## 분석 대상`,
     `카테고리: ${payload.categoryLabel}`,
@@ -67,19 +38,23 @@ function buildContext(payload: {
     `## 검색 수요 추이 (네이버 데이터랩 쇼핑인사이트)`,
     trendBlock,
     ``,
-    `## 시장 상품 구성 (네이버 쇼핑 검색)`,
-    marketBlock,
+    `## 사용할 수 없는 데이터`,
+    `가격 분포, 브랜드 점유, 상품 수는 이번 분석에 주어지지 않았다.`,
+    `네이버 쇼핑 검색 API 종료로 수집 경로가 없어졌기 때문이다.`,
   ].join("\n");
 }
 
 const SYSTEM = `당신은 국내 패션 이커머스 브랜드의 시니어 MD다. 10년차이고 여성/남성 캐주얼 라인을 담당한다.
-주어진 검색 수요 데이터와 실판매 상품 데이터만을 근거로 상품 기획 브리프를 작성한다.
+주어진 검색 수요 데이터만을 근거로 상품 기획 브리프를 작성한다.
 
 원칙:
-- 반드시 주어진 숫자를 인용하며 판단한다. "중앙가 59,000원 대비 …" 처럼 근거를 문장에 넣는다.
-- 데이터에 없는 사실(특정 브랜드의 매출, 원가, 재고)은 단정하지 말고 "확인 필요"로 표시한다.
+- 반드시 주어진 숫자를 인용하며 판단한다. "검색지수가 3월 42 → 7월 88로 …" 처럼 근거를 문장에 넣는다.
 - 검색지수는 상대값(기간 내 최대=100)이며 절대 판매량이 아니다. 이 점을 오해하지 않는다.
+- 가격·브랜드 점유·상품 수 데이터는 주어지지 않았다. 구체적 판매가나 경쟁 강도를 지어내지 않는다.
+  가격이나 경쟁을 언급해야 할 자리에서는 "가격대는 실제 시장 조사로 확인 필요" 처럼 미확인임을 명시한다.
+- 데이터에 없는 사실(브랜드 매출, 원가, 재고)은 단정하지 말고 "확인 필요"로 표시한다.
 - 라인업 제안은 실행 가능해야 한다. 역할(볼륨/전략/이미지/테스트)을 배분하고, 볼륨 스타일에 발주를 몰아준다.
+  발주 수량은 키워드별 검색 수요 비중을 근거로 상대 배분한다.
 - 모든 출력은 한국어. MD 실무 용어를 쓰되 문장은 간결하게.
 - 데이터 출처가 데모인 경우에도 분석 방법론은 동일하게 적용하되, headline 끝에 "(데모 데이터 기준)"을 붙인다.`;
 

@@ -235,7 +235,7 @@ export function StyleBoard() {
               ? `${board.keywords.join(" · ")} · ${
                   STYLE_MOODS.find((m) => m.id === board.mood)?.label
                 } · ${visible.length}장`
-              : "실제 사진 대신 자리표시 카드입니다. NAVER_CLIENT_ID / NAVER_CLIENT_SECRET 를 .env.local 에 넣으면 실제 레퍼런스로 전환됩니다"}
+              : "실제 사진 대신 자리표시 카드입니다. 환경 변수 NAVER_CLIENT_ID / NAVER_CLIENT_SECRET 를 설정하면 실제 레퍼런스로 전환됩니다"}
           </span>
           {board.notes.map((n) => (
             <span key={n} className="text-xs text-accent-2">

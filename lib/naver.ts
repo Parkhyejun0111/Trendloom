@@ -1,8 +1,12 @@
 /**
  * 네이버 오픈 API 클라이언트
- *  - 쇼핑 검색 API      : 실제 판매중인 상품/가격/브랜드/카테고리
  *  - 데이터랩 쇼핑인사이트 : 카테고리 내 키워드 검색량 추이 (성별/연령 세그먼트)
- *  - 이미지 검색 API     : 스타일 레퍼런스 이미지 (룩북/스트릿/코디컷)
+ *  - 이미지 검색 API      : 스타일 레퍼런스 이미지 (룩북/스트릿/코디컷)
+ *
+ * 쇼핑 검색 API(/v1/search/shop)는 네이버가 서비스를 종료해 제거했다.
+ * 호출하면 404 `SE05 존재하지 않는 검색 api` 가 떨어진다. 가격 분포·브랜드
+ * 점유는 이 API에만 의존하던 지표라 함께 걷어냈다 — 근거 없는 숫자를
+ * 만들어 내느니 없는 지표로 두는 편이 MD 판단에 안전하다.
  *
  * 키(NAVER_CLIENT_ID / NAVER_CLIENT_SECRET)가 없으면
  * 키워드 해시 기반의 결정적(deterministic) 데모 데이터로 폴백한다.
@@ -27,32 +31,6 @@ export type Segment = {
 
 export type TrendPoint = { period: string; ratio: number };
 export type TrendSeries = { keyword: string; data: TrendPoint[] };
-
-export type ShopItem = {
-  title: string;
-  link: string;
-  image: string;
-  price: number;
-  mall: string;
-  brand: string;
-  category: string;
-};
-
-export type MarketSnapshot = {
-  keyword: string;
-  total: number;
-  items: ShopItem[];
-  price: {
-    min: number;
-    p25: number;
-    median: number;
-    p75: number;
-    max: number;
-    avg: number;
-  };
-  brandShare: { name: string; count: number; share: number }[];
-  categoryShare: { name: string; count: number; share: number }[];
-};
 
 const hasKeys = () =>
   Boolean(process.env.NAVER_CLIENT_ID && process.env.NAVER_CLIENT_SECRET);
@@ -182,7 +160,7 @@ function demoTrend(
 }
 
 /* ------------------------------------------------------------------ */
-/* 2. 쇼핑 검색 — 실판매 상품/가격 스냅샷                                */
+/* 공통 헬퍼                                                            */
 /* ------------------------------------------------------------------ */
 
 const stripTags = (s: string) =>
@@ -194,105 +172,8 @@ const stripTags = (s: string) =>
     .replace(/&gt;/g, ">")
     .trim();
 
-export async function fetchMarket(
-  keyword: string,
-): Promise<{ source: "naver" | "demo"; snapshot: MarketSnapshot; note?: string }> {
-  if (hasKeys()) {
-    try {
-      const url = new URL("https://openapi.naver.com/v1/search/shop.json");
-      url.searchParams.set("query", keyword);
-      url.searchParams.set("display", "100");
-      url.searchParams.set("sort", "sim");
-      const res = await fetch(url, { headers: authHeaders(), cache: "no-store" });
-      if (!res.ok) throw new Error(`shop ${res.status}: ${await res.text()}`);
-      const json = await res.json();
-      const items: ShopItem[] = (json.items ?? []).map(
-        (it: Record<string, string>) => ({
-          title: stripTags(it.title),
-          link: it.link,
-          image: it.image,
-          price: Number(it.lprice) || 0,
-          mall: it.mallName || "기타",
-          brand: it.brand || it.maker || "노브랜드",
-          category: [it.category2, it.category3, it.category4]
-            .filter(Boolean)
-            .join(" > "),
-        }),
-      );
-      return {
-        source: "naver",
-        snapshot: summarize(keyword, Number(json.total) || items.length, items),
-      };
-    } catch (e) {
-      const items = demoItems(keyword);
-      return {
-        source: "demo",
-        snapshot: summarize(keyword, demoTotal(keyword), items),
-        note: `네이버 쇼핑 API 호출 실패로 데모 데이터 사용: ${(e as Error).message}`,
-      };
-    }
-  }
-
-  const items = demoItems(keyword);
-  return { source: "demo", snapshot: summarize(keyword, demoTotal(keyword), items) };
-}
-
-/** 데모 모드에서 키워드별로 다른 '검색 결과 총 상품수' */
-function demoTotal(keyword: string) {
-  return 4000 + Math.floor(mulberry32(seedFrom(`total:${keyword}`))() * 900_000);
-}
-
-const DEMO_BRANDS = [
-  "무신사 스탠다드", "커버낫", "마르디 메크르디", "인사일런스", "토피",
-  "라퍼지스토어", "디스이즈네버댓", "예스아이씨", "노브랜드", "안다르",
-];
-const DEMO_MALLS = ["무신사", "29CM", "지그재그", "W컨셉", "스마트스토어", "SSF샵"];
-
-function demoItems(keyword: string): ShopItem[] {
-  const rand = mulberry32(seedFrom(keyword));
-  const anchor = 29000 + Math.floor(rand() * 90000);
-  return Array.from({ length: 60 }, (_, i) => {
-    const brand = DEMO_BRANDS[Math.floor(rand() * DEMO_BRANDS.length)];
-    // 로그정규 유사 분포: 저가 다수 + 고가 롱테일
-    const mult = Math.exp((rand() - 0.42) * 1.15);
-    return {
-      title: `${brand} ${keyword} ${["오버핏", "슬림핏", "크롭", "세미와이드", "레귤러"][i % 5]}`,
-      link: "#",
-      image: "",
-      price: Math.round((anchor * mult) / 1000) * 1000,
-      mall: DEMO_MALLS[Math.floor(rand() * DEMO_MALLS.length)],
-      brand,
-      category: `${["여성의류", "남성의류"][i % 2]} > ${keyword}`,
-    };
-  });
-}
-
-function quantile(sorted: number[], q: number) {
-  if (!sorted.length) return 0;
-  const pos = (sorted.length - 1) * q;
-  const lo = Math.floor(pos);
-  const hi = Math.ceil(pos);
-  return Math.round(sorted[lo] + (sorted[hi] - sorted[lo]) * (pos - lo));
-}
-
-function share(items: ShopItem[], key: "brand" | "category") {
-  const counts = new Map<string, number>();
-  for (const it of items) {
-    const k = it[key] || "기타";
-    counts.set(k, (counts.get(k) ?? 0) + 1);
-  }
-  return [...counts.entries()]
-    .map(([name, count]) => ({
-      name,
-      count,
-      share: Math.round((count / items.length) * 1000) / 10,
-    }))
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 8);
-}
-
 /* ------------------------------------------------------------------ */
-/* 3. 이미지 검색 — 스타일 레퍼런스 보드                                 */
+/* 2. 이미지 검색 — 스타일 레퍼런스 보드                                 */
 /* ------------------------------------------------------------------ */
 
 export type StyleImage = {
@@ -394,29 +275,4 @@ function demoStyleImages(keyword: string): StyleImage[] {
       placeholder: true,
     };
   });
-}
-
-function summarize(
-  keyword: string,
-  total: number,
-  items: ShopItem[],
-): MarketSnapshot {
-  const prices = items.map((i) => i.price).filter((p) => p > 0).sort((a, b) => a - b);
-  return {
-    keyword,
-    total,
-    items: items.slice(0, 24),
-    price: {
-      min: prices[0] ?? 0,
-      p25: quantile(prices, 0.25),
-      median: quantile(prices, 0.5),
-      p75: quantile(prices, 0.75),
-      max: prices[prices.length - 1] ?? 0,
-      avg: prices.length
-        ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length)
-        : 0,
-    },
-    brandShare: share(items, "brand"),
-    categoryShare: share(items, "category"),
-  };
 }

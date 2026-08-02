@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { useObject } from "@ai-sdk/react";
 import { insightSchema } from "@/lib/schemas";
-import { FASHION_CATEGORIES, type MarketSnapshot, type TrendSeries } from "@/lib/naver";
-import { PriceRangeChart, SERIES, ShareBars, TrendChart } from "./charts";
+import { FASHION_CATEGORIES, type TrendSeries } from "@/lib/naver";
+import { SERIES, StatTile, TrendChart } from "./charts";
 import { Card, Field, KeyValue, Pill, Skeleton, Toggle } from "./ui";
 
 type ScanResult = {
@@ -12,8 +12,22 @@ type ScanResult = {
   notes: string[];
   keywords: string[];
   trend: TrendSeries[];
-  markets: MarketSnapshot[];
 };
+
+/** 검색지수 시계열에서 스탯 타일에 쓸 지표를 뽑는다 */
+function readSeries(s: TrendSeries) {
+  const pts = s.data.map((d) => d.ratio);
+  const first = pts[0] ?? 0;
+  const last = pts.at(-1) ?? 0;
+  const peak = [...s.data].sort((a, b) => b.ratio - a.ratio)[0];
+  return {
+    keyword: s.keyword,
+    last: Math.round(last * 10) / 10,
+    delta: first ? Math.round(((last - first) / first) * 100) : 0,
+    peakMonth: peak ? `${Number(peak.period.slice(5, 7))}월` : "—",
+    spark: pts,
+  };
+}
 
 const AGES = [
   { v: "10", l: "10대" },
@@ -29,8 +43,6 @@ const PRESETS = [
   { label: "데일리 이너", kws: ["니트 가디건", "스트라이프 셔츠", "슬리브리스"] },
   { label: "하의 라인업", kws: ["와이드팬츠", "데님 스커트", "카고팬츠"] },
 ];
-
-const won = (n: number) => `${n.toLocaleString("ko-KR")}원`;
 
 export function TrendScanner() {
   const [input, setInput] = useState("");
@@ -88,7 +100,6 @@ export function TrendScanner() {
         segmentLabel: segmentLabel(),
         source: data.source,
         trend: data.trend,
-        markets: data.markets,
       });
     } catch (e) {
       setErr((e as Error).message);
@@ -102,7 +113,7 @@ export function TrendScanner() {
       {/* ── 입력 ───────────────────────────────────────────── */}
       <Card
         title="무엇을 기획하시나요?"
-        hint="키워드 최대 5개 · 네이버 데이터랩 검색 추이와 네이버 쇼핑 실판매 상품을 함께 읽습니다"
+        hint="키워드 최대 5개 · 네이버 데이터랩 쇼핑인사이트의 검색 수요 추이를 읽습니다"
       >
         <div className="grid gap-5 lg:grid-cols-[1.4fr_1fr]">
           <div className="space-y-4">
@@ -239,8 +250,8 @@ export function TrendScanner() {
           </Pill>
           <span className="text-xs text-muted">
             {scan.source === "naver"
-              ? "데이터랩 쇼핑인사이트 + 쇼핑 검색 API 응답 기준"
-              : "NAVER_CLIENT_ID / NAVER_CLIENT_SECRET 를 .env.local 에 넣으면 실데이터로 전환됩니다"}
+              ? "네이버 데이터랩 쇼핑인사이트 응답 기준"
+              : "환경 변수 NAVER_CLIENT_ID / NAVER_CLIENT_SECRET 를 설정하고 네이버 개발자센터에서 애플리케이션에 '데이터랩(쇼핑인사이트)' API 를 추가하면 실데이터로 전환됩니다"}
           </span>
           {scan.notes.map((n) => (
             <span key={n} className="text-xs text-accent-2">
@@ -252,42 +263,27 @@ export function TrendScanner() {
 
       {/* ── 차트 ──────────────────────────────────────────── */}
       {scan && (
-        <div className="fade-up grid gap-6 xl:grid-cols-2">
-          <Card
-            title="검색 수요 추이"
-            hint="최근 12개월 · 네이버 데이터랩 쇼핑인사이트"
-            className="xl:col-span-2"
-          >
+        <div className="fade-up space-y-6">
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {scan.trend.map((s, i) => {
+              const r = readSeries(s);
+              return (
+                <StatTile
+                  key={r.keyword}
+                  label={r.keyword}
+                  value={String(r.last)}
+                  unit="검색지수"
+                  delta={r.delta}
+                  deltaLabel={`12개월 · 피크 ${r.peakMonth}`}
+                  spark={r.spark}
+                  color={SERIES[i % SERIES.length]}
+                />
+              );
+            })}
+          </div>
+
+          <Card title="검색 수요 추이" hint="최근 12개월 · 네이버 데이터랩 쇼핑인사이트">
             <TrendChart series={scan.trend} />
-          </Card>
-
-          <Card title="가격 분포" hint="네이버 쇼핑 검색 상위 100개 상품의 최저가 기준">
-            <PriceRangeChart markets={scan.markets} />
-          </Card>
-
-          <Card title="경쟁 브랜드 점유" hint="키워드별 상위 노출 브랜드 비중">
-            <div className="space-y-5">
-              {scan.markets.map((m, i) => (
-                <div key={m.keyword}>
-                  <div className="mb-2 flex items-center justify-between">
-                    <span className="flex items-center gap-2 text-sm">
-                      <span
-                        className="size-2 rounded-full"
-                        style={{ background: SERIES[i % SERIES.length] }}
-                      />
-                      {m.keyword}
-                    </span>
-                    <span className="font-mono text-xs text-muted">
-                      총 {m.total.toLocaleString("ko-KR")}개
-                    </span>
-                  </div>
-                  <ShareBars
-                    data={m.brandShare.slice(0, 5)}
-                    color={SERIES[i % SERIES.length]}
-                  />
-                </div>
-              ))}
-            </div>
           </Card>
         </div>
       )}
@@ -310,16 +306,6 @@ export function TrendScanner() {
             )}
             <div className="mt-4 flex flex-wrap gap-2">
               {insight?.demandStage && <Pill tone="accent">수요 {insight.demandStage}</Pill>}
-              {insight?.competition?.density && (
-                <Pill tone={
-                  insight.competition.density === "레드오션" ? "warn" : "default"
-                }>
-                  경쟁 {insight.competition.density}
-                </Pill>
-              )}
-              {insight?.priceStrategy?.sweetSpot && (
-                <Pill>권장가 {insight.priceStrategy.sweetSpot}</Pill>
-              )}
             </div>
             {insight?.seasonality && (
               <p className="mt-4 text-sm leading-relaxed text-paper/80">
@@ -329,12 +315,13 @@ export function TrendScanner() {
           </Card>
 
           <div className="grid gap-6 lg:grid-cols-3">
-            <Card title="가격 전략">
+            <Card title="키워드별 수요 해석">
               <dl>
-                <KeyValue k="스위트스팟" v={insight?.priceStrategy?.sweetSpot ?? "—"} />
-                <KeyValue k="근거" v={insight?.priceStrategy?.rationale ?? "—"} />
-                <KeyValue k="마진 리스크" v={insight?.priceStrategy?.marginRisk ?? "—"} />
+                {(insight?.keywordReads ?? []).map((kr, i) => (
+                  <KeyValue key={i} k={kr?.keyword ?? "—"} v={kr?.read ?? "—"} />
+                ))}
               </dl>
+              {!insight?.keywordReads?.length && <Skeleton lines={4} />}
             </Card>
 
             <Card title="기회 요인">
@@ -378,7 +365,6 @@ export function TrendScanner() {
                   </div>
                   <dl className="mt-3">
                     <KeyValue k="타겟" v={s?.target ?? "—"} />
-                    <KeyValue k="판매가" v={s?.retailPrice ?? "—"} />
                     <KeyValue
                       k="컬러웨이"
                       v={
@@ -430,34 +416,30 @@ export function TrendScanner() {
         </p>
       )}
 
-      {/* ── 원본 상품 테이블 (접근성: 표 뷰) ────────────────── */}
+      {/* ── 원본 검색지수 테이블 (접근성: 표 뷰) ─────────────── */}
       {scan && (
-        <Card title="원본 상품 데이터" hint="차트의 근거가 된 실제 검색 결과">
+        <Card title="원본 검색지수" hint="차트의 근거가 된 데이터랩 응답">
           <details>
             <summary className="cursor-pointer text-sm text-muted hover:text-paper">
-              표로 보기 ({scan.markets.reduce((a, m) => a + m.items.length, 0)}건)
+              표로 보기 ({scan.trend.reduce((a, s) => a + s.data.length, 0)}건)
             </summary>
             <div className="mt-4 max-h-96 overflow-auto rounded-lg border border-line">
               <table className="w-full text-left text-xs">
                 <thead className="sticky top-0 bg-ink-2">
                   <tr className="text-muted">
                     <th className="px-3 py-2 font-medium">키워드</th>
-                    <th className="px-3 py-2 font-medium">상품명</th>
-                    <th className="px-3 py-2 font-medium">브랜드</th>
-                    <th className="px-3 py-2 font-medium">몰</th>
-                    <th className="px-3 py-2 text-right font-medium">최저가</th>
+                    <th className="px-3 py-2 font-medium">월</th>
+                    <th className="px-3 py-2 text-right font-medium">검색지수</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {scan.markets.flatMap((m) =>
-                    m.items.map((it, i) => (
-                      <tr key={`${m.keyword}-${i}`} className="border-t border-line/60">
-                        <td className="whitespace-nowrap px-3 py-2 text-muted">{m.keyword}</td>
-                        <td className="max-w-xs truncate px-3 py-2">{it.title}</td>
-                        <td className="whitespace-nowrap px-3 py-2 text-paper/70">{it.brand}</td>
-                        <td className="whitespace-nowrap px-3 py-2 text-paper/70">{it.mall}</td>
+                  {scan.trend.flatMap((s) =>
+                    s.data.map((d) => (
+                      <tr key={`${s.keyword}-${d.period}`} className="border-t border-line/60">
+                        <td className="whitespace-nowrap px-3 py-2 text-muted">{s.keyword}</td>
+                        <td className="whitespace-nowrap px-3 py-2">{d.period.slice(0, 7)}</td>
                         <td className="whitespace-nowrap px-3 py-2 text-right font-mono tabular-nums">
-                          {won(it.price)}
+                          {d.ratio}
                         </td>
                       </tr>
                     )),

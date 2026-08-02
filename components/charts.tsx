@@ -1,7 +1,7 @@
 "use client";
 
 import { useId, useState } from "react";
-import type { MarketSnapshot, TrendSeries } from "@/lib/naver";
+import type { TrendSeries } from "@/lib/naver";
 
 /**
  * 검증 완료된 카테고리 팔레트 (dark, surface #141417) — 순서 고정, 순환 금지.
@@ -17,7 +17,6 @@ const AXIS = "#35353f";
 const INK_MUTED = "#85858f";
 const INK_2 = "#c3c2c8";
 
-const won = (n: number) => `${n.toLocaleString("ko-KR")}원`;
 const shortMonth = (p: string) => `${p.slice(2, 4)}.${p.slice(5, 7)}`;
 
 /** 사람이 읽기 좋은 축 눈금 (1 / 2 / 2.5 / 5 × 10^n) */
@@ -31,9 +30,6 @@ function niceTicks(lo: number, hi: number, target = 5) {
   for (let v = start; v <= hi + step * 0.001; v += step) if (v >= lo - step * 0.001) out.push(v);
   return out;
 }
-
-const compactWon = (n: number) =>
-  n >= 10000 ? `${Math.round(n / 1000) / 10}만` : `${Math.round(n / 1000)}천`;
 
 /* ================================================================== */
 /* 스탯 타일 — 차트를 읽기 전에 결론부터                                */
@@ -356,171 +352,6 @@ export function TrendChart({ series }: { series: TrendSeries[] }) {
 }
 
 /* ================================================================== */
-/* 가격 분포 — 공통 축 위의 박스플롯                                    */
-/* ================================================================== */
-
-export function PriceRangeChart({ markets }: { markets: MarketSnapshot[] }) {
-  const id = useId();
-  const [hover, setHover] = useState<number | null>(null);
-  if (!markets.length) return null;
-
-  const lo = 0;
-  const hi = Math.max(...markets.map((m) => m.price.p75 * 1.25), 1);
-  const ticks = niceTicks(lo, hi, 4);
-  const top = ticks[ticks.length - 1];
-  const pct = (v: number) => Math.max(0, Math.min(100, ((v - lo) / (top - lo)) * 100));
-
-  return (
-    <div className="relative">
-      {/* 공통 가격 축 — 눈금이 있어야 막대가 값으로 읽힌다 */}
-      <div className="pointer-events-none absolute inset-x-0 top-6 bottom-9" aria-hidden="true">
-        {ticks.map((t) => (
-          <span
-            key={t}
-            className="absolute top-0 bottom-0 w-px"
-            style={{ left: `${pct(t)}%`, background: t === 0 ? AXIS : GRID }}
-          />
-        ))}
-      </div>
-
-      <div className="relative space-y-4">
-        {markets.map((m, i) => {
-          const c = SERIES[i];
-          const p = m.price;
-          return (
-            <div
-              key={m.keyword}
-              className="relative"
-              onMouseEnter={() => setHover(i)}
-              onMouseLeave={() => setHover(null)}
-            >
-              <div className="mb-1.5 flex items-baseline justify-between gap-3">
-                <span className="flex items-center gap-2 text-sm">
-                  <span className="size-2.5 rounded-full" style={{ background: c }} />
-                  {m.keyword}
-                </span>
-                <span className="font-mono text-xs text-muted">
-                  중앙 <span className="text-paper">{won(p.median)}</span>
-                </span>
-              </div>
-
-              <svg viewBox="0 0 100 14" preserveAspectRatio="none" className="h-7 w-full">
-                <defs>
-                  <linearGradient id={`bx-${id}-${i}`} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={c} stopOpacity="1" />
-                    <stop offset="100%" stopColor={c} stopOpacity="0.62" />
-                  </linearGradient>
-                </defs>
-
-                {/* min–max 위스커 */}
-                <line
-                  x1={pct(p.min)}
-                  x2={pct(p.max)}
-                  y1="7"
-                  y2="7"
-                  stroke={AXIS}
-                  strokeWidth="1"
-                  vectorEffect="non-scaling-stroke"
-                />
-                <line
-                  x1={pct(p.min)}
-                  x2={pct(p.min)}
-                  y1="4"
-                  y2="10"
-                  stroke={AXIS}
-                  strokeWidth="1"
-                  vectorEffect="non-scaling-stroke"
-                />
-                <line
-                  x1={pct(p.max)}
-                  x2={pct(p.max)}
-                  y1="4"
-                  y2="10"
-                  stroke={AXIS}
-                  strokeWidth="1"
-                  vectorEffect="non-scaling-stroke"
-                />
-
-                {/* p25–p75 코어 밴드 */}
-                <rect
-                  x={pct(p.p25)}
-                  y="1"
-                  width={Math.max(0.6, pct(p.p75) - pct(p.p25))}
-                  height="12"
-                  rx="1.6"
-                  ry="4"
-                  fill={`url(#bx-${id}-${i})`}
-                  className="grow-x"
-                  style={{ animationDelay: `${i * 70}ms` }}
-                />
-
-                {/* 중앙값 — 2px 서피스 링으로 밴드 위에서 분리 */}
-                <line
-                  x1={pct(p.median)}
-                  x2={pct(p.median)}
-                  y1="0.5"
-                  y2="13.5"
-                  stroke={SURFACE}
-                  strokeWidth="4"
-                  vectorEffect="non-scaling-stroke"
-                />
-                <line
-                  x1={pct(p.median)}
-                  x2={pct(p.median)}
-                  y1="0.5"
-                  y2="13.5"
-                  stroke="#f4f4f6"
-                  strokeWidth="2"
-                  vectorEffect="non-scaling-stroke"
-                />
-              </svg>
-
-              {hover === i && (
-                <div className="pointer-events-none absolute -top-1 left-0 z-20 -translate-y-full rounded-xl border border-line-2 bg-ink-3/95 px-3 py-2.5 text-xs shadow-2xl backdrop-blur">
-                  <div className="mb-1 font-medium">{m.keyword}</div>
-                  <div className="grid grid-cols-2 gap-x-5 gap-y-0.5 font-mono tabular-nums">
-                    <span className="text-muted">최저</span>
-                    <span className="text-right">{won(p.min)}</span>
-                    <span className="text-muted">하위 25%</span>
-                    <span className="text-right">{won(p.p25)}</span>
-                    <span className="text-muted">중앙</span>
-                    <span className="text-right">{won(p.median)}</span>
-                    <span className="text-muted">상위 25%</span>
-                    <span className="text-right">{won(p.p75)}</span>
-                    <span className="text-muted">최고</span>
-                    <span className="text-right">{won(p.max)}</span>
-                    <span className="text-muted">평균</span>
-                    <span className="text-right">{won(p.avg)}</span>
-                  </div>
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      {/* 축 눈금 라벨 */}
-      <div className="relative mt-1.5 h-4">
-        {ticks.map((t) => (
-          <span
-            key={t}
-            className="absolute -translate-x-1/2 font-mono text-[10px] tabular-nums text-muted"
-            style={{ left: `${pct(t)}%` }}
-          >
-            {t === 0 ? "0" : compactWon(t)}
-          </span>
-        ))}
-      </div>
-
-      <p className="mt-3 text-[11px] leading-relaxed text-muted">
-        진한 구간 = 하위 25%~상위 25% (실제 상품의 절반이 모인 가격대) · 흰 선 = 중앙가 · 얇은 선 =
-        최저~최고
-      </p>
-    </div>
-  );
-}
-
-/* ================================================================== */
 
 export function Legend({
   items,
@@ -557,42 +388,6 @@ export function Legend({
           </button>
         );
       })}
-    </div>
-  );
-}
-
-/** 브랜드/카테고리 점유 — 순위 바 (4px 라운드 데이터엔드 + 값 라벨) */
-export function ShareBars({
-  data,
-  color = SERIES[0],
-}: {
-  data: { name: string; count: number; share: number }[];
-  color?: string;
-}) {
-  const max = Math.max(...data.map((d) => d.share), 1);
-  return (
-    <div className="space-y-2">
-      {data.map((d, i) => (
-        <div key={d.name} className="flex items-center gap-3 text-xs">
-          <span className="w-28 shrink-0 truncate text-paper/80" title={d.name}>
-            {d.name}
-          </span>
-          <div className="relative h-3 flex-1 overflow-hidden rounded-md bg-ink">
-            <div
-              className="grow-x absolute inset-y-0 left-0 rounded-r-md"
-              style={{
-                width: `${(d.share / max) * 100}%`,
-                background: `linear-gradient(90deg, ${color}b3, ${color})`,
-                boxShadow: `0 0 12px -2px ${color}66`,
-                animationDelay: `${i * 55}ms`,
-              }}
-            />
-          </div>
-          <span className="w-11 shrink-0 text-right font-mono tabular-nums text-paper/70">
-            {d.share}%
-          </span>
-        </div>
-      ))}
     </div>
   );
 }

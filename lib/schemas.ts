@@ -7,15 +7,16 @@ export const insightSchema = z.object({
     .enum(["급상승", "상승", "정체", "하락", "시즌대기"])
     .describe("검색량 추이로 판단한 수요 단계"),
   seasonality: z.string().describe("시즌성 패턴과 다음 피크 시점 (1~2문장)"),
-  priceStrategy: z.object({
-    sweetSpot: z.string().describe('권장 소비자가 밴드. 예: "59,000~79,000원"'),
-    rationale: z.string().describe("가격 분포 데이터를 근거로 한 설명"),
-    marginRisk: z.string().describe("해당 가격대의 마진/경쟁 리스크"),
-  }),
-  competition: z.object({
-    density: z.enum(["레드오션", "경쟁적", "여유", "블루오션"]),
-    note: z.string().describe("브랜드 점유·상품 수 기준 경쟁 판단 근거"),
-  }),
+  keywordReads: z
+    .array(
+      z.object({
+        keyword: z.string(),
+        read: z
+          .string()
+          .describe("이 키워드의 추이를 검색지수 근거와 함께 한 줄로 해석"),
+      }),
+    )
+    .describe("키워드별 수요 해석 — 입력된 키워드 전부"),
   opportunities: z
     .array(z.string())
     .describe("데이터에서 도출한 구체적 기회 요인 3가지"),
@@ -28,7 +29,6 @@ export const insightSchema = z.object({
           .enum(["볼륨", "전략", "이미지", "테스트"])
           .describe("라인업 내 역할"),
         target: z.string().describe("타겟 고객 한 줄"),
-        retailPrice: z.string().describe("판매가 제안"),
         colorway: z.array(z.string()).describe("컬러웨이 2~4개"),
         buyQty: z.string().describe("초도 발주 수량 제안과 근거"),
         reason: z.string().describe("이 스타일을 넣는 이유"),
