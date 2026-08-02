@@ -1,44 +1,83 @@
 import { z } from "zod";
 
-/** 트렌드 스캔 결과 → MD 인사이트 브리프 */
-export const insightSchema = z.object({
-  headline: z.string().describe("MD가 회의에서 바로 읽을 수 있는 한 줄 결론"),
-  demandStage: z
-    .enum(["급상승", "상승", "정체", "하락", "시즌대기"])
-    .describe("검색량 추이로 판단한 수요 단계"),
-  seasonality: z.string().describe("시즌성 패턴과 다음 피크 시점 (1~2문장)"),
-  keywordReads: z
+/** 시뮬레이션 결과 → 발주/가격 의사결정 브리프 */
+export const planSchema = z.object({
+  headline: z.string().describe("추천 조합과 근거를 한 줄로. 숫자를 넣는다"),
+  verdict: z
+    .enum(["실행", "조건부 실행", "재검토"])
+    .describe("이 계획을 그대로 실행해도 되는지"),
+  reasoning: z
+    .string()
+    .describe("추천 조합을 고른 이유. 판매율·영업이익·잔여재고 수치를 인용해 2~3문장"),
+  tradeoffs: z
     .array(
       z.object({
-        keyword: z.string(),
-        read: z
-          .string()
-          .describe("이 키워드의 추이를 검색지수 근거와 함께 한 줄로 해석"),
+        option: z.string().describe('비교 대상 조합. 예: "109,000원 × 9,200장"'),
+        note: z.string().describe("이 안이 추천안보다 못한 이유를 숫자로"),
       }),
     )
-    .describe("키워드별 수요 해석 — 입력된 키워드 전부"),
-  opportunities: z
+    .describe("탈락한 주요 대안 2~3개와 그 이유"),
+  risks: z.array(z.string()).describe("이 계획의 리스크 2~3가지"),
+  assumptionChecks: z
     .array(z.string())
-    .describe("데이터에서 도출한 구체적 기회 요인 3가지"),
-  risks: z.array(z.string()).describe("발주 전 확인해야 할 리스크 2~3가지"),
-  lineup: z
-    .array(
-      z.object({
-        style: z.string().describe("스타일명 (예: 오버핏 워시드 데님 자켓)"),
-        role: z
-          .enum(["볼륨", "전략", "이미지", "테스트"])
-          .describe("라인업 내 역할"),
-        target: z.string().describe("타겟 고객 한 줄"),
-        colorway: z.array(z.string()).describe("컬러웨이 2~4개"),
-        buyQty: z.string().describe("초도 발주 수량 제안과 근거"),
-        reason: z.string().describe("이 스타일을 넣는 이유"),
-      }),
-    )
-    .describe("시즌 라인업 제안 4~5개"),
-  nextActions: z.array(z.string()).describe("MD가 이번 주에 할 액션 3가지"),
+    .describe("결과를 좌우하는 입력 가정 중 발주 전에 검증해야 할 것 2~3가지"),
+  markdownPlan: z.string().describe("할인 운영 계획 — 시점과 폭, 판단 기준 2~3문장"),
+  nextActions: z.array(z.string()).describe("이번 주에 할 액션 3가지"),
 });
 
-export type Insight = z.infer<typeof insightSchema>;
+export type Plan = z.infer<typeof planSchema>;
+
+/** 리뷰 묶음 → 상품 개선 브리프 */
+export const reviewSchema = z.object({
+  headline: z.string().describe("리뷰 전체를 관통하는 한 줄 결론"),
+  sentiment: z.object({
+    positiveRatio: z
+      .number()
+      .describe("긍정 리뷰 비율 추정치 0~100. 정확한 집계가 아니라 추정임"),
+    note: z.string().describe("전반적 반응 한 줄"),
+  }),
+  issues: z
+    .array(
+      z.object({
+        category: z.enum([
+          "사이즈",
+          "핏",
+          "소재",
+          "색상",
+          "품질",
+          "배송",
+          "가격",
+          "기타",
+        ]),
+        summary: z.string().describe("이슈 내용 한 줄"),
+        severity: z.enum(["치명", "주요", "경미"]).describe("구매 결정에 미치는 영향"),
+        frequency: z.enum(["높음", "보통", "낮음"]).describe("리뷰에서 언급된 빈도"),
+        quotes: z.array(z.string()).describe("근거가 되는 실제 리뷰 문장 1~2개 그대로 인용"),
+        action: z.string().describe("MD가 취할 조치"),
+      }),
+    )
+    .describe("발견된 문제 3~6개. 심각한 것부터"),
+  strengths: z
+    .array(
+      z.object({
+        point: z.string().describe("강점 한 줄"),
+        quotes: z.array(z.string()).describe("근거 리뷰 문장 1~2개"),
+      }),
+    )
+    .describe("재생산·마케팅에 쓸 강점 2~4개"),
+  sizeGuidance: z
+    .string()
+    .describe('사이즈 종합 안내. 예: "정사이즈 대비 작게 나옴, 한 치수 업 권장"'),
+  copyFixes: z
+    .array(z.string())
+    .describe("리뷰가 드러낸 오해를 막을 상세페이지·카피 보완 3가지"),
+  reorderSignal: z.object({
+    call: z.enum(["재생산", "보류", "중단"]),
+    reason: z.string().describe("판단 근거 1~2문장"),
+  }),
+});
+
+export type ReviewBrief = z.infer<typeof reviewSchema>;
 
 /** 상품 이미지 → 속성 태깅 + 커머스 카피 */
 export const taggingSchema = z.object({

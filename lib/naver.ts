@@ -1,36 +1,15 @@
 /**
- * 네이버 오픈 API 클라이언트
- *  - 데이터랩 쇼핑인사이트 : 카테고리 내 키워드 검색량 추이 (성별/연령 세그먼트)
- *  - 이미지 검색 API      : 스타일 레퍼런스 이미지 (룩북/스트릿/코디컷)
+ * 네이버 오픈 API 클라이언트 — 이미지 검색.
  *
- * 쇼핑 검색 API(/v1/search/shop)는 네이버가 서비스를 종료해 제거했다.
- * 호출하면 404 `SE05 존재하지 않는 검색 api` 가 떨어진다. 가격 분포·브랜드
- * 점유는 이 API에만 의존하던 지표라 함께 걷어냈다 — 근거 없는 숫자를
- * 만들어 내느니 없는 지표로 두는 편이 MD 판단에 안전하다.
+ * 한때 쇼핑 검색과 데이터랩 쇼핑인사이트도 썼지만 둘 다 쓸 수 없게 됐다.
+ * 쇼핑 검색(/v1/search/shop)은 서비스가 종료돼 404 SE05 를 주고,
+ * 데이터랩은 콘솔이 "신규로 등록할 수 없는 API"로 등록을 거부해
+ * 401 Scope Status Invalid 가 떨어진다. 남은 것은 이미지 검색뿐이다.
  *
- * 키(NAVER_CLIENT_ID / NAVER_CLIENT_SECRET)가 없으면
- * 키워드 해시 기반의 결정적(deterministic) 데모 데이터로 폴백한다.
- * 폴백 여부는 응답의 `source: "demo"` 로 UI에 그대로 노출한다.
+ * 키(NAVER_CLIENT_ID / NAVER_CLIENT_SECRET)가 없으면 키워드 해시 기반의
+ * 결정적 데모 카드로 폴백하고, 그 사실을 `source: "demo"` 로 UI 에 그대로 노출한다.
  */
 
-export const FASHION_CATEGORIES = [
-  { code: "50000000", label: "패션의류" },
-  { code: "50000001", label: "패션잡화" },
-  { code: "50000002", label: "화장품/미용" },
-  { code: "50000007", label: "스포츠/레저" },
-] as const;
-
-export type Segment = {
-  /** "" = 전체, "m" | "f" */
-  gender: "" | "m" | "f";
-  /** ["10","20","30","40","50","60"] */
-  ages: string[];
-  /** "" = 전체, "pc" | "mo" */
-  device: "" | "pc" | "mo";
-};
-
-export type TrendPoint = { period: string; ratio: number };
-export type TrendSeries = { keyword: string; data: TrendPoint[] };
 
 const hasKeys = () =>
   Boolean(process.env.NAVER_CLIENT_ID && process.env.NAVER_CLIENT_SECRET);
@@ -65,101 +44,6 @@ function mulberry32(seed: number) {
 }
 
 /* ------------------------------------------------------------------ */
-/* 1. 데이터랩 쇼핑인사이트 — 키워드 트렌드                              */
-/* ------------------------------------------------------------------ */
-
-export function monthRange(months = 12) {
-  const end = new Date();
-  const start = new Date(end);
-  start.setMonth(start.getMonth() - (months - 1));
-  start.setDate(1);
-  const fmt = (d: Date) => d.toISOString().slice(0, 10);
-  return { startDate: fmt(start), endDate: fmt(end) };
-}
-
-export async function fetchKeywordTrend(
-  category: string,
-  keywords: string[],
-  segment: Segment,
-): Promise<{ source: "naver" | "demo"; series: TrendSeries[]; note?: string }> {
-  const { startDate, endDate } = monthRange(12);
-
-  if (hasKeys()) {
-    try {
-      const res = await fetch(
-        "https://openapi.naver.com/v1/datalab/shopping/category/keywords",
-        {
-          method: "POST",
-          headers: { ...authHeaders(), "Content-Type": "application/json" },
-          body: JSON.stringify({
-            startDate,
-            endDate,
-            timeUnit: "month",
-            category,
-            keyword: keywords.slice(0, 5).map((k) => ({ name: k, param: [k] })),
-            device: segment.device,
-            gender: segment.gender,
-            ages: segment.ages,
-          }),
-          cache: "no-store",
-        },
-      );
-      if (!res.ok) throw new Error(`datalab ${res.status}: ${await res.text()}`);
-      const json = await res.json();
-      return {
-        source: "naver",
-        series: (json.results ?? []).map(
-          (r: { title: string; data: TrendPoint[] }) => ({
-            keyword: r.title,
-            data: r.data ?? [],
-          }),
-        ),
-      };
-    } catch (e) {
-      return {
-        source: "demo",
-        series: demoTrend(keywords, startDate, segment),
-        note: `네이버 데이터랩 호출 실패로 데모 데이터 사용: ${(e as Error).message}`,
-      };
-    }
-  }
-
-  return { source: "demo", series: demoTrend(keywords, startDate, segment) };
-}
-
-function demoTrend(
-  keywords: string[],
-  startDate: string,
-  segment: Segment,
-): TrendSeries[] {
-  const start = new Date(startDate);
-  return keywords.slice(0, 5).map((k) => {
-    const rand = mulberry32(seedFrom(k + segment.gender + segment.ages.join()));
-    // 시즌성: 아우터 계열은 겨울 피크, 이너/원피스는 여름 피크로 흉내
-    const winter = /코트|패딩|자켓|재킷|점퍼|니트|부츠|머플러|플리스|무스탕/.test(k);
-    const summer = /원피스|반팔|린넨|샌들|비치|나시|크롭|셔츠/.test(k);
-    const base = 30 + rand() * 30;
-    const drift = (rand() - 0.35) * 3.5; // 완만한 상승/하락 추세
-    return {
-      keyword: k,
-      data: Array.from({ length: 12 }, (_, i) => {
-        const d = new Date(start);
-        d.setMonth(d.getMonth() + i);
-        const m = d.getMonth() + 1;
-        let season = 0;
-        if (winter) season = 26 * Math.cos(((m - 1) / 12) * 2 * Math.PI);
-        if (summer) season = 26 * Math.cos(((m - 7) / 12) * 2 * Math.PI);
-        const noise = (rand() - 0.5) * 9;
-        return {
-          period: `${d.getFullYear()}-${String(m).padStart(2, "0")}-01`,
-          ratio: Math.max(1, Math.round((base + season + drift * i + noise) * 10) / 10),
-        };
-      }),
-    };
-  });
-}
-
-/* ------------------------------------------------------------------ */
 /* 공통 헬퍼                                                            */
 /* ------------------------------------------------------------------ */
 
@@ -173,7 +57,7 @@ const stripTags = (s: string) =>
     .trim();
 
 /* ------------------------------------------------------------------ */
-/* 2. 이미지 검색 — 스타일 레퍼런스 보드                                 */
+/* 이미지 검색 — 스타일 레퍼런스 보드                                 */
 /* ------------------------------------------------------------------ */
 
 /**
