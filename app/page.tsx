@@ -10,7 +10,7 @@ const TABS = [
   {
     id: "trend",
     label: "트렌드 스캐너",
-    desc: "검색 수요 · 가격 분포 · 경쟁 구도를 읽고 시즌 라인업까지",
+    desc: "데이터랩 CSV 를 올리면 검색 수요를 읽고 시즌 라인업까지",
   },
   {
     id: "board",
@@ -68,9 +68,10 @@ export default function Page() {
       {tab === "tagger" && <ProductTagger />}
 
       <footer className="mt-16 border-t border-line pt-6 text-xs leading-relaxed text-muted">
-        데이터: 네이버 데이터랩 쇼핑인사이트 · 네이버 이미지 검색 API · 분석: Claude.
-        네이버 쇼핑 검색 API 종료로 가격·브랜드 점유 지표는 제공하지 않습니다. AI 출력은 의사결정
-        보조용이며 발주 전 실제 매출·원가·재고 데이터로 검증하세요.
+        데이터: 네이버 데이터랩 쇼핑인사이트(CSV 업로드) · 네이버 이미지 검색 API · 분석: Claude.
+        네이버가 쇼핑 검색 API 를 종료하고 데이터랩 API 신규 등록을 중단해, 가격·브랜드 점유
+        지표는 제공하지 않고 수요 추이는 CSV 로 받습니다. AI 출력은 의사결정 보조용이며 발주 전
+        실제 매출·원가·재고 데이터로 검증하세요.
       </footer>
     </main>
   );

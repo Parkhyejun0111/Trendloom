@@ -1,18 +1,35 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useObject } from "@ai-sdk/react";
 import { insightSchema } from "@/lib/schemas";
 import { FASHION_CATEGORIES, type TrendSeries } from "@/lib/naver";
+import { decodeCsv, parseDatalabCsv } from "@/lib/datalab-csv";
 import { SERIES, StatTile, TrendChart } from "./charts";
 import { Card, Field, KeyValue, Pill, Skeleton, Toggle } from "./ui";
 
 type ScanResult = {
-  source: "naver" | "demo";
+  /** csv = 업로드한 실데이터, naver = 레거시 앱의 데이터랩 API, demo = 샘플 생성기 */
+  source: "csv" | "naver" | "demo";
   notes: string[];
   keywords: string[];
   trend: TrendSeries[];
+  fileName?: string;
 };
+
+const AGES = [
+  { v: "10", l: "10대" },
+  { v: "20", l: "20대" },
+  { v: "30", l: "30대" },
+  { v: "40", l: "40대" },
+  { v: "50", l: "50대" },
+  { v: "60", l: "60대+" },
+];
+
+/** 샘플 둘러보기용 — 실제 조회가 아니라 데모 생성기를 태운다 */
+const SAMPLE_KEYWORDS = ["트렌치코트", "블레이저", "바람막이"];
+
+const DATALAB_URL = "https://datalab.naver.com/shoppingInsight/sCategory.naver";
 
 /** 검색지수 시계열에서 스탯 타일에 쓸 지표를 뽑는다 */
 function readSeries(s: TrendSeries) {
@@ -29,30 +46,15 @@ function readSeries(s: TrendSeries) {
   };
 }
 
-const AGES = [
-  { v: "10", l: "10대" },
-  { v: "20", l: "20대" },
-  { v: "30", l: "30대" },
-  { v: "40", l: "40대" },
-  { v: "50", l: "50대" },
-  { v: "60", l: "60대+" },
-];
-
-const PRESETS = [
-  { label: "24SS 아우터", kws: ["트렌치코트", "블레이저", "바람막이"] },
-  { label: "데일리 이너", kws: ["니트 가디건", "스트라이프 셔츠", "슬리브리스"] },
-  { label: "하의 라인업", kws: ["와이드팬츠", "데님 스커트", "카고팬츠"] },
-];
-
 export function TrendScanner() {
-  const [input, setInput] = useState("");
-  const [keywords, setKeywords] = useState<string[]>(["트렌치코트", "블레이저", "바람막이"]);
   const [category, setCategory] = useState<string>(FASHION_CATEGORIES[0].code);
   const [gender, setGender] = useState<"" | "m" | "f">("");
   const [ages, setAges] = useState<string[]>([]);
   const [scan, setScan] = useState<ScanResult | null>(null);
-  const [scanning, setScanning] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [dragging, setDragging] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const {
     object: insight,
@@ -61,12 +63,8 @@ export function TrendScanner() {
     error: aiError,
   } = useObject({ api: "/api/insight", schema: insightSchema });
 
-  const addKeyword = (raw: string) => {
-    const k = raw.trim();
-    if (!k || keywords.includes(k) || keywords.length >= 5) return;
-    setKeywords([...keywords, k]);
-    setInput("");
-  };
+  const categoryLabel = () =>
+    FASHION_CATEGORIES.find((c) => c.code === category)?.label ?? category;
 
   const segmentLabel = () => {
     const g = gender === "m" ? "남성" : gender === "f" ? "여성" : "전체";
@@ -74,37 +72,69 @@ export function TrendScanner() {
     return `${g} · ${a}`;
   };
 
-  async function run() {
-    if (!keywords.length) return;
-    setScanning(true);
+  function analyze(data: ScanResult) {
+    setScan(data);
+    submit({
+      keywords: data.keywords,
+      categoryLabel: categoryLabel(),
+      segmentLabel: segmentLabel(),
+      source: data.source,
+      trend: data.trend,
+    });
+  }
+
+  async function onFile(file: File) {
     setErr(null);
+    setBusy(true);
+    setScan(null);
+    try {
+      const { series, warnings } = parseDatalabCsv(decodeCsv(await file.arrayBuffer()));
+      if (!series.length) {
+        setErr(warnings.join(" ") || "CSV 를 읽지 못했습니다.");
+        return;
+      }
+      analyze({
+        source: "csv",
+        notes: warnings,
+        keywords: series.map((s) => s.keyword),
+        trend: series,
+        fileName: file.name,
+      });
+    } catch (e) {
+      setErr(`CSV 읽기 실패: ${(e as Error).message}`);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  /** 데이터가 없어도 화면을 둘러볼 수 있게 하는 경로 — 배지로 분명히 구분한다 */
+  async function runSample() {
+    setErr(null);
+    setBusy(true);
     setScan(null);
     try {
       const res = await fetch("/api/scan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          keywords,
+          keywords: SAMPLE_KEYWORDS,
           category,
           segment: { gender, ages, device: "" },
         }),
       });
       if (!res.ok) throw new Error((await res.json()).error ?? `HTTP ${res.status}`);
-      const data: ScanResult = await res.json();
-      setScan(data);
-
-      submit({
+      const data = await res.json();
+      // 데이터랩 권한이 남아 있는 레거시 앱이면 실데이터가 올 수도 있다. 응답을 그대로 믿는다.
+      analyze({
+        source: data.source === "naver" ? "naver" : "demo",
+        notes: data.notes ?? [],
         keywords: data.keywords,
-        categoryLabel:
-          FASHION_CATEGORIES.find((c) => c.code === category)?.label ?? category,
-        segmentLabel: segmentLabel(),
-        source: data.source,
         trend: data.trend,
       });
     } catch (e) {
       setErr((e as Error).message);
     } finally {
-      setScanning(false);
+      setBusy(false);
     }
   }
 
@@ -112,63 +142,66 @@ export function TrendScanner() {
     <div className="space-y-6">
       {/* ── 입력 ───────────────────────────────────────────── */}
       <Card
-        title="무엇을 기획하시나요?"
-        hint="키워드 최대 5개 · 네이버 데이터랩 쇼핑인사이트의 검색 수요 추이를 읽습니다"
+        title="데이터랩 CSV 를 올려 주세요"
+        hint="네이버가 데이터랩 API 신규 등록을 막아, 웹에서 받은 CSV 를 직접 읽습니다"
       >
         <div className="grid gap-5 lg:grid-cols-[1.4fr_1fr]">
           <div className="space-y-4">
-            <Field label="키워드">
-              <div className="flex flex-wrap items-center gap-2 rounded-lg border border-line-2 bg-ink p-2">
-                {keywords.map((k, i) => (
-                  <span
-                    key={k}
-                    className="flex items-center gap-1.5 rounded-md bg-ink-2 py-1 pl-2 pr-1 text-sm"
-                  >
-                    <span
-                      className="size-2 rounded-full"
-                      style={{ background: SERIES[i % SERIES.length] }}
-                    />
-                    {k}
-                    <button
-                      onClick={() => setKeywords(keywords.filter((x) => x !== k))}
-                      className="ml-0.5 rounded px-1 text-muted hover:text-accent-2"
-                      aria-label={`${k} 삭제`}
-                    >
-                      ×
-                    </button>
-                  </span>
-                ))}
-                <input
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      addKeyword(input);
-                    }
-                    if (e.key === "Backspace" && !input) setKeywords(keywords.slice(0, -1));
-                  }}
-                  placeholder={keywords.length >= 5 ? "최대 5개" : "키워드 입력 후 Enter"}
-                  disabled={keywords.length >= 5}
-                  className="min-w-[140px] flex-1 bg-transparent px-2 py-1 text-sm outline-none placeholder:text-muted"
-                />
-              </div>
-            </Field>
-
-            <div className="flex flex-wrap gap-2">
-              <span className="self-center text-[11px] uppercase tracking-wider text-muted">
-                프리셋
-              </span>
-              {PRESETS.map((p) => (
-                <button
-                  key={p.label}
-                  onClick={() => setKeywords(p.kws)}
-                  className="rounded-md border border-line-2 px-2.5 py-1 text-xs text-paper/70 transition hover:border-accent hover:text-accent"
-                >
-                  {p.label}
-                </button>
-              ))}
+            <div
+              onDragOver={(e) => {
+                e.preventDefault();
+                setDragging(true);
+              }}
+              onDragLeave={() => setDragging(false)}
+              onDrop={(e) => {
+                e.preventDefault();
+                setDragging(false);
+                const f = e.dataTransfer.files?.[0];
+                if (f) onFile(f);
+              }}
+              onClick={() => fileRef.current?.click()}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") fileRef.current?.click();
+              }}
+              className={`flex cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed px-6 py-9 text-center transition ${
+                dragging
+                  ? "border-accent bg-accent/5"
+                  : "border-line-2 hover:border-accent/60"
+              }`}
+            >
+              <p className="text-sm font-medium text-paper">
+                {scan?.fileName ?? "CSV 파일을 끌어다 놓거나 클릭해서 선택"}
+              </p>
+              <p className="mt-1.5 text-xs text-muted">
+                쇼핑인사이트 → 조회 → 우측 하단 &ldquo;다운로드&rdquo; 로 받은 파일
+              </p>
+              <input
+                ref={fileRef}
+                type="file"
+                accept=".csv,text/csv"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) onFile(f);
+                  e.target.value = "";
+                }}
+              />
             </div>
+
+            <p className="text-xs leading-relaxed text-muted">
+              <a
+                href={DATALAB_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="text-accent underline underline-offset-2"
+              >
+                데이터랩 쇼핑인사이트 열기 ↗
+              </a>{" "}
+              — 분야·기간·성별·연령을 고른 뒤 조회하고, 결과를 CSV 로 내려받아 올리시면
+              됩니다. 아래 조건은 AI 브리프에 그대로 전달되니 조회하신 값과 맞춰 주세요.
+            </p>
           </div>
 
           <div className="space-y-4">
@@ -224,15 +257,17 @@ export function TrendScanner() {
           </div>
         </div>
 
-        <div className="mt-5 flex items-center gap-3 border-t border-line pt-4">
+        <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-line pt-4">
           <button
-            onClick={run}
-            disabled={scanning || thinking || !keywords.length}
-            className="rounded-lg bg-accent px-5 py-2.5 text-sm font-semibold text-ink transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
+            onClick={runSample}
+            disabled={busy || thinking}
+            className="rounded-lg border border-line-2 px-4 py-2.5 text-sm text-paper/80 transition hover:border-accent hover:text-accent disabled:cursor-not-allowed disabled:opacity-40"
           >
-            {scanning ? "데이터 수집 중…" : thinking ? "MD가 분석 중…" : "시장 스캔 + AI 브리프"}
+            {busy ? "처리 중…" : thinking ? "MD가 분석 중…" : "샘플 데이터로 둘러보기"}
           </button>
-          <span className="text-xs text-muted">{segmentLabel()} 세그먼트로 조회</span>
+          <span className="text-xs text-muted">
+            {segmentLabel()} · {categoryLabel()} 조건으로 브리프를 씁니다
+          </span>
         </div>
 
         {err && (
@@ -245,13 +280,19 @@ export function TrendScanner() {
       {/* ── 데이터 출처 배너 ────────────────────────────────── */}
       {scan && (
         <div className="fade-up flex flex-wrap items-center gap-3 rounded-lg border border-line bg-ink-2/40 px-4 py-3">
-          <Pill tone={scan.source === "naver" ? "accent" : "warn"}>
-            {scan.source === "naver" ? "네이버 오픈API 실데이터" : "데모 데이터"}
+          <Pill tone={scan.source === "demo" ? "warn" : "accent"}>
+            {scan.source === "csv"
+              ? "네이버 데이터랩 실데이터"
+              : scan.source === "naver"
+                ? "네이버 데이터랩 API 실데이터"
+                : "샘플 데이터"}
           </Pill>
           <span className="text-xs text-muted">
-            {scan.source === "naver"
-              ? "네이버 데이터랩 쇼핑인사이트 응답 기준"
-              : "환경 변수 NAVER_CLIENT_ID / NAVER_CLIENT_SECRET 를 설정하고 네이버 개발자센터에서 애플리케이션에 '데이터랩(쇼핑인사이트)' API 를 추가하면 실데이터로 전환됩니다"}
+            {scan.source === "csv"
+              ? `${scan.fileName} · 키워드 ${scan.keywords.length}개 · ${scan.trend[0]?.data.length ?? 0}개 구간`
+              : scan.source === "naver"
+                ? "데이터랩 쇼핑인사이트 응답 기준"
+                : "실제 시장과 무관한 예시입니다. 판단 근거로 쓰지 마세요"}
           </span>
           {scan.notes.map((n) => (
             <span key={n} className="text-xs text-accent-2">
@@ -274,7 +315,7 @@ export function TrendScanner() {
                   value={String(r.last)}
                   unit="검색지수"
                   delta={r.delta}
-                  deltaLabel={`12개월 · 피크 ${r.peakMonth}`}
+                  deltaLabel={`기간 증감 · 피크 ${r.peakMonth}`}
                   spark={r.spark}
                   color={SERIES[i % SERIES.length]}
                 />
@@ -282,7 +323,7 @@ export function TrendScanner() {
             })}
           </div>
 
-          <Card title="검색 수요 추이" hint="최근 12개월 · 네이버 데이터랩 쇼핑인사이트">
+          <Card title="검색 수요 추이" hint="업로드한 데이터랩 쇼핑인사이트 기준">
             <TrendChart series={scan.trend} />
           </Card>
         </div>
@@ -416,9 +457,9 @@ export function TrendScanner() {
         </p>
       )}
 
-      {/* ── 원본 검색지수 테이블 (접근성: 표 뷰) ─────────────── */}
+      {/* ── 원본 검색지수 테이블 (파싱 결과 확인용) ──────────── */}
       {scan && (
-        <Card title="원본 검색지수" hint="차트의 근거가 된 데이터랩 응답">
+        <Card title="원본 검색지수" hint="CSV 를 제대로 읽었는지 여기서 확인하세요">
           <details>
             <summary className="cursor-pointer text-sm text-muted hover:text-paper">
               표로 보기 ({scan.trend.reduce((a, s) => a + s.data.length, 0)}건)
@@ -428,7 +469,7 @@ export function TrendScanner() {
                 <thead className="sticky top-0 bg-ink-2">
                   <tr className="text-muted">
                     <th className="px-3 py-2 font-medium">키워드</th>
-                    <th className="px-3 py-2 font-medium">월</th>
+                    <th className="px-3 py-2 font-medium">기간</th>
                     <th className="px-3 py-2 text-right font-medium">검색지수</th>
                   </tr>
                 </thead>
@@ -437,7 +478,7 @@ export function TrendScanner() {
                     s.data.map((d) => (
                       <tr key={`${s.keyword}-${d.period}`} className="border-t border-line/60">
                         <td className="whitespace-nowrap px-3 py-2 text-muted">{s.keyword}</td>
-                        <td className="whitespace-nowrap px-3 py-2">{d.period.slice(0, 7)}</td>
+                        <td className="whitespace-nowrap px-3 py-2">{d.period}</td>
                         <td className="whitespace-nowrap px-3 py-2 text-right font-mono tabular-nums">
                           {d.ratio}
                         </td>

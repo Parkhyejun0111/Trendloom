@@ -33,7 +33,11 @@ function buildContext(payload: {
     `카테고리: ${payload.categoryLabel}`,
     `키워드: ${payload.keywords.join(", ")}`,
     `타겟 세그먼트: ${payload.segmentLabel}`,
-    `데이터 출처: ${payload.source === "naver" ? "네이버 오픈API 실데이터" : "데모 데이터(실제 시장과 다를 수 있음)"}`,
+    `데이터 출처: ${
+      payload.source === "csv"
+        ? "네이버 데이터랩 쇼핑인사이트에서 사용자가 직접 내려받은 CSV (실데이터)"
+        : "샘플 데이터(실제 시장과 무관한 예시)"
+    }`,
     ``,
     `## 검색 수요 추이 (네이버 데이터랩 쇼핑인사이트)`,
     trendBlock,
@@ -56,7 +60,7 @@ const SYSTEM = `당신은 국내 패션 이커머스 브랜드의 시니어 MD�
 - 라인업 제안은 실행 가능해야 한다. 역할(볼륨/전략/이미지/테스트)을 배분하고, 볼륨 스타일에 발주를 몰아준다.
   발주 수량은 키워드별 검색 수요 비중을 근거로 상대 배분한다.
 - 모든 출력은 한국어. MD 실무 용어를 쓰되 문장은 간결하게.
-- 데이터 출처가 데모인 경우에도 분석 방법론은 동일하게 적용하되, headline 끝에 "(데모 데이터 기준)"을 붙인다.`;
+- 데이터 출처가 샘플인 경우에도 분석 방법론은 동일하게 적용하되, headline 끝에 "(샘플 데이터 기준)"을 붙인다.`;
 
 export async function POST(req: Request) {
   if (!hasModelKey()) {
