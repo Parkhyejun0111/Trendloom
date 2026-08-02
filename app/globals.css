@@ -25,9 +25,29 @@
   --color-s4: #c98500;
   --color-s5: #d55181;
 
-  --font-sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont,
-    "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", system-ui, sans-serif;
+  /* 에스코어 드림 (next/font/local 이 --font-scdream 을 주입) */
+  --font-sans: var(--font-scdream), "Pretendard Variable", Pretendard,
+    -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR",
+    "Malgun Gothic", system-ui, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+
+  /* ── 본문 스케일 — 기본값 대비 5% 상향 ──────────────────
+     드림체가 같은 픽셀에서 산세리프보다 작아 보여 소폭만 키웠다.
+     행간도 같은 비율로 올려 줄바꿈 리듬을 유지한다. */
+  --text-xs: 0.79rem;
+  --text-xs--line-height: calc(1.05 / 0.79);
+  --text-sm: 0.92rem;
+  --text-sm--line-height: calc(1.31 / 0.92);
+  --text-base: 1.05rem;
+  --text-base--line-height: calc(1.58 / 1.05);
+  --text-lg: 1.18rem;
+  --text-lg--line-height: calc(1.84 / 1.18);
+  --text-xl: 1.31rem;
+  --text-xl--line-height: calc(1.84 / 1.31);
+  --text-2xl: 1.58rem;
+  --text-2xl--line-height: calc(2.1 / 1.58);
+  --text-3xl: 1.97rem;
+  --text-3xl--line-height: calc(2.36 / 1.97);
 }
 
 html {
@@ -38,7 +58,16 @@ body {
   background: var(--color-ink);
   color: var(--color-paper);
   font-family: var(--font-sans);
+  /* 드림 3(Light)이 기본. 강조는 font-medium(5)·font-semibold(6)로 올린다 */
+  font-weight: 300;
   -webkit-font-smoothing: antialiased;
+}
+
+/* 실어 둔 굵기는 200·300·500·600 뿐이라, 기본 bold 요소를 600 으로 맞춰
+   브라우저가 가짜 굵기를 합성하지 않게 한다 */
+strong,
+b {
+  font-weight: 600;
 }
 
 /* 페이지 상단 퍼플 글로우 — 무드보드의 블랙+퍼플 대비 */
@@ -183,12 +212,56 @@ body::before {
   animation: bob 4.5s ease-in-out infinite;
 }
 
+/* ── 진입 스플래시 ───────────────────────────────────── */
+
+@keyframes splash-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.splash-rise {
+  animation: splash-rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* 로딩 바 — 스플래시가 걷히는 시점에 맞춰 다 찬다 */
+@keyframes splash-bar {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.splash-bar {
+  animation: splash-bar 1.35s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+@keyframes splash-out {
+  to {
+    opacity: 0;
+  }
+}
+
+.splash-out {
+  animation: splash-out 0.45s ease both;
+  pointer-events: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .fade-up,
   .draw,
   .grow-x,
   .bob,
-  .shimmer::after {
+  .shimmer::after,
+  .splash-rise,
+  .splash-bar {
     animation: none !important;
   }
   .draw {
