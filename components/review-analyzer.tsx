@@ -54,7 +54,7 @@ export function ReviewAnalyzer() {
               value={product}
               onChange={(e) => setProduct(e.target.value)}
               placeholder="예: 오버핏 울 블렌드 자켓"
-              className="w-full rounded-lg border border-line-2 bg-ink px-3 py-2.5 text-sm outline-none placeholder:text-muted focus:border-muted"
+              className="w-full rounded-lg border border-line-2 bg-ink px-3 py-2.5 text-sm outline-none backdrop-blur-sm placeholder:text-muted focus:border-muted"
             />
           </Field>
 
@@ -64,7 +64,7 @@ export function ReviewAnalyzer() {
               onChange={(e) => setReviews(e.target.value)}
               rows={12}
               placeholder="리뷰를 한 줄에 하나씩 붙여넣으세요"
-              className="w-full resize-y rounded-lg border border-line-2 bg-ink px-3 py-2.5 font-mono text-xs leading-relaxed outline-none placeholder:text-muted focus:border-muted"
+              className="w-full resize-y rounded-lg border border-line-2 bg-ink px-3 py-2.5 font-mono text-xs leading-relaxed outline-none backdrop-blur-sm placeholder:text-muted focus:border-muted"
             />
           </Field>
         </div>
@@ -161,7 +161,7 @@ export function ReviewAnalyzer() {
             </div>
           </Card>
 
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div className="grid gap-6 @lg:grid-cols-2">
             <Card title="살릴 강점" hint="재생산·마케팅에 그대로 쓸 수 있는 것">
               <div className="space-y-3">
                 {(brief?.strengths ?? []).map((s, i) => (

@@ -3,14 +3,12 @@
 import { useId } from "react";
 
 /**
- * 검증 완료된 카테고리 팔레트 (dark, surface #141417) — 순서 고정, 순환 금지.
- * violet → aqua → blue → yellow → magenta
- * adjacent CVD ΔE 13.2 · normal-vision ΔE 19.3 · 전 슬롯 contrast ≥ 3:1
- * (dataviz validate_palette.js --mode dark --surface "#141417" 통과)
+ * 브랜드 팔레트 그대로 쓰는 카테고리 컬러 (light, surface #ffffff) — 순서 고정, 순환 금지.
+ * 블루(메인) → 잉크블랙 → 로즈 → 올리브라임 → 민트
  */
-export const SERIES = ["#9085e9", "#199e70", "#3987e5", "#c98500", "#d55181"];
+export const SERIES = ["#4fa3e3", "#12120f", "#e0729b", "#a9c23f", "#6fc9a4"];
 
-const SURFACE = "#141417";
+const SURFACE = "#ffffff";
 
 
 /* ================================================================== */
@@ -45,7 +43,7 @@ export function StatTile({
       />
       <p className="text-[11px] font-medium tracking-wide text-muted">{label}</p>
       <p className="mt-1.5 flex items-baseline gap-1.5">
-        <span className="text-2xl font-semibold tracking-tight">{value}</span>
+        <span className="text-2xl font-extrabold tracking-tight">{value}</span>
         {unit && <span className="text-xs text-muted">{unit}</span>}
       </p>
 
@@ -53,11 +51,11 @@ export function StatTile({
         <p className="mt-1 flex items-center gap-1.5 text-xs">
           <span
             aria-hidden="true"
-            className={up ? "text-[#0ca30c]" : "text-[#e66767]"}
+            className={up ? "text-[#1a7a34]" : "text-[#b3261e]"}
           >
             {up ? "▲" : "▼"}
           </span>
-          <span className={up ? "text-[#0ca30c]" : "text-[#e66767]"}>
+          <span className={up ? "text-[#1a7a34]" : "text-[#b3261e]"}>
             {up ? "+" : ""}
             {delta}%
           </span>

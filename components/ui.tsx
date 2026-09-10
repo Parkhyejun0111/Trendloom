@@ -40,12 +40,12 @@ export function Pill({
 }) {
   const tones = {
     default: "border-line-2 bg-ink-3/60 text-paper/75",
-    accent: "border-accent/45 bg-accent/12 text-accent",
+    accent: "border-transparent bg-accent-tint text-paper",
     warn: "border-accent-2/45 bg-accent-2/12 text-accent-2",
   } as const;
   return (
     <span
-      className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-medium ${tones[tone]}`}
+      className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-medium backdrop-blur-sm ${tones[tone]}`}
     >
       {children}
     </span>
@@ -77,10 +77,10 @@ export function Toggle({
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`rounded-lg border px-3 py-1.5 text-xs transition ${
+      className={`rounded-full px-3 py-1.5 text-xs transition ${
         active
-          ? "border-accent/60 bg-accent/15 font-semibold text-accent"
-          : "border-line-2 text-paper/70 hover:border-muted hover:text-paper"
+          ? "glass-bead font-semibold text-paper"
+          : "border border-line-2 bg-ink/40 text-paper/70 hover:bg-ink"
       }`}
     >
       {children}
@@ -88,7 +88,7 @@ export function Toggle({
   );
 }
 
-/** 주 CTA — 퍼플 그라디언트 + 글로우 */
+/** 주 CTA — 화이트 + 블랙 보더 알약 버튼 */
 export function PrimaryButton({
   children,
   onClick,
@@ -107,7 +107,7 @@ export function PrimaryButton({
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className={`rounded-xl bg-gradient-to-b from-accent to-accent-deep px-5 py-2.5 text-sm font-semibold text-ink shadow-[0_6px_20px_-6px_rgba(124,92,240,0.75)] transition hover:brightness-110 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-35 disabled:shadow-none ${className}`}
+      className={`glass-bead rounded-full px-5 py-2.5 text-sm font-semibold text-paper disabled:cursor-not-allowed ${className}`}
     >
       {children}
     </button>

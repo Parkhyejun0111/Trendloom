@@ -46,7 +46,7 @@ export function ProductTagger() {
   const copyBlock = tag?.copy;
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[380px_1fr]">
+    <div className="grid gap-6 @lg:grid-cols-[380px_1fr]">
       {/* ── 업로드 ─────────────────────────────────────────── */}
       <div className="space-y-4">
         <Card title="상품 이미지" hint="사입 후보, 샘플 촬영본, 경쟁사 상품 어떤 것이든">
@@ -58,7 +58,7 @@ export function ProductTagger() {
               if (f) onFile(f);
             }}
             onClick={() => fileRef.current?.click()}
-            className="flex aspect-[3/4] cursor-pointer items-center justify-center overflow-hidden rounded-lg border border-dashed border-line-2 bg-ink transition hover:border-accent"
+            className="flex aspect-[3/4] cursor-pointer items-center justify-center overflow-hidden rounded-lg border border-dashed border-line-2 bg-ink backdrop-blur-sm transition hover:border-accent"
           >
             {preview ? (
               <Image
@@ -92,7 +92,7 @@ export function ProductTagger() {
             onChange={(e) => setHint(e.target.value)}
             placeholder="MD 메모 (선택) — 예: 24FW 여성 라인, 목표 판매가 79,000원, 원가 21,000원"
             rows={3}
-            className="mt-4 w-full resize-none rounded-lg border border-line-2 bg-ink px-3 py-2.5 text-sm outline-none placeholder:text-muted focus:border-muted"
+            className="mt-4 w-full resize-none rounded-lg border border-line-2 bg-ink px-3 py-2.5 text-sm outline-none backdrop-blur-sm placeholder:text-muted focus:border-muted"
           />
 
           <button
@@ -143,7 +143,7 @@ export function ProductTagger() {
         {(isLoading || attrs) && (
           <Card title="상품 속성" hint="커머스 필터/검색에 그대로 매핑되는 표준 속성값">
             {attrs ? (
-              <div className="grid gap-x-8 gap-y-0 sm:grid-cols-2">
+              <div className="grid gap-x-8 gap-y-0 @sm:grid-cols-2">
                 <KeyValue k="카테고리" v={attrs.category ?? "—"} />
                 <KeyValue k="아이템" v={attrs.subCategory ?? "—"} />
                 <KeyValue k="실루엣" v={attrs.silhouette ?? "—"} />
@@ -229,7 +229,7 @@ export function ProductTagger() {
                 )}
 
                 {!!copyBlock.bullets?.length && (
-                  <ul className="grid gap-2 sm:grid-cols-2">
+                  <ul className="grid gap-2 @sm:grid-cols-2">
                     {copyBlock.bullets.map((b, i) => (
                       <li
                         key={i}
@@ -241,7 +241,7 @@ export function ProductTagger() {
                   </ul>
                 )}
 
-                <div className="grid gap-4 sm:grid-cols-2">
+                <div className="grid gap-4 @sm:grid-cols-2">
                   <div>
                     <p className="mb-2 text-[11px] uppercase tracking-wider text-muted">
                       검색 키워드

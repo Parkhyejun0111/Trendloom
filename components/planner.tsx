@@ -29,7 +29,7 @@ function NumField({
 }) {
   return (
     <Field label={label}>
-      <div className="flex items-center gap-2 rounded-lg border border-line-2 bg-ink px-3 py-2.5 focus-within:border-muted">
+      <div className="flex items-center gap-2 rounded-lg border border-line-2 bg-ink px-3 py-2.5 backdrop-blur-sm focus-within:border-muted">
         <input
           type="number"
           value={value}
@@ -88,7 +88,7 @@ function DepletionCurve({ scenario }: { scenario: Scenario }) {
               y={pad.t}
               width={w - pad.r - x(mdStart)}
               height={h - pad.t - pad.b}
-              fill="#c98500"
+              fill="#f6c7dc"
               opacity={0.08}
             />
             <line
@@ -96,11 +96,11 @@ function DepletionCurve({ scenario }: { scenario: Scenario }) {
               x2={x(mdStart)}
               y1={pad.t}
               y2={h - pad.b}
-              stroke="#c98500"
+              stroke="#e0729b"
               strokeWidth={1}
               strokeDasharray="3 3"
             />
-            <text x={x(mdStart) + 5} y={pad.t + 11} fontSize={10} fill="#c98500">
+            <text x={x(mdStart) + 5} y={pad.t + 11} fontSize={10} fill="#e0729b">
               할인 시작
             </text>
           </>
@@ -113,7 +113,7 @@ function DepletionCurve({ scenario }: { scenario: Scenario }) {
         <path d={line} fill="none" stroke={SERIES[0]} strokeWidth={2} strokeLinecap="round" />
         {pts.map((p, i) =>
           i % 2 === 0 ? (
-            <text key={p.week} x={x(i)} y={h - 7} fontSize={9} fill="#85858f" textAnchor="middle">
+            <text key={p.week} x={x(i)} y={h - 7} fontSize={9} fill="#5c5c58" textAnchor="middle">
               {p.week}
             </text>
           ) : null,
@@ -159,13 +159,13 @@ export function Planner() {
         title="발주 수량과 판매가를 정합니다"
         hint="입력을 바꾸면 16개 조합이 즉시 다시 계산됩니다 · 숫자는 전부 산식으로 나옵니다"
       >
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <div className="sm:col-span-2">
+        <div className="grid gap-4 @sm:grid-cols-2">
+          <div className="@sm:col-span-2">
             <Field label="아이템">
               <input
                 value={input.item}
                 onChange={(e) => set("item", e.target.value)}
-                className="w-full rounded-lg border border-line-2 bg-ink px-3 py-2.5 text-sm outline-none focus:border-muted"
+                className="w-full rounded-lg border border-line-2 bg-ink px-3 py-2.5 text-sm outline-none backdrop-blur-sm focus:border-muted"
               />
             </Field>
           </div>
@@ -189,7 +189,7 @@ export function Planner() {
           <p className="mb-3 text-xs text-accent-soft">
             결과를 가장 크게 좌우하는 두 값입니다. 유사 상품 실적으로 맞춰 주세요.
           </p>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 @sm:grid-cols-2">
             <NumField
               label="기준가에서 주당 예상 판매량"
               value={input.baseWeeklyUnits}
@@ -208,7 +208,7 @@ export function Planner() {
           </div>
         </div>
 
-        <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-4 grid gap-4 @sm:grid-cols-2">
           <NumField
             label="시즌 길이"
             value={input.seasonWeeks}
@@ -275,7 +275,7 @@ export function Planner() {
       {/* ── 추천안 요약 ───────────────────────────────────── */}
       {shown && (
         <div className="fade-up space-y-6">
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-4 @sm:grid-cols-2">
             <StatTile
               label="영업이익"
               value={eok(shown.profit)}
@@ -299,7 +299,7 @@ export function Planner() {
             />
           </div>
 
-          <div className="grid gap-6 xl:grid-cols-[1.3fr_1fr]">
+          <div className="grid gap-6 @xl:grid-cols-[1.3fr_1fr]">
             <Card
               title="재고 소진 곡선"
               hint={`${won(shown.price)} × ${jang(shown.qty)} 기준`}
@@ -340,7 +340,7 @@ export function Planner() {
           >
             <div className="max-h-[420px] overflow-auto rounded-lg border border-line">
               <table className="w-full text-left text-xs">
-                <thead className="sticky top-0 bg-ink-2">
+                <thead className="sticky top-0 bg-ink-2 backdrop-blur-md">
                   <tr className="text-muted">
                     <th className="px-3 py-2 font-medium">판매가</th>
                     <th className="px-3 py-2 text-right font-medium">발주량</th>
@@ -430,7 +430,7 @@ export function Planner() {
             )}
           </Card>
 
-          <div className="grid gap-6 lg:grid-cols-3">
+          <div className="grid gap-6 @lg:grid-cols-3">
             <Card title="탈락한 대안">
               <dl>
                 {(plan?.tradeoffs ?? []).map((t, i) => (

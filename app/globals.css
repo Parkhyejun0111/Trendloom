@@ -1,91 +1,130 @@
 @import "tailwindcss";
 
 @theme {
-  /* ── 서피스 (모던 블랙) ─────────────────────────────── */
-  --color-ink: #08080a;
-  --color-ink-2: #141417;
-  --color-ink-3: #1c1c21;
-  --color-line: #26262d;
-  --color-line-2: #35353f;
-  --color-muted: #85858f;
-  --color-paper: #f4f4f6;
+  /* ── 서피스 (플랫 화이트) ─────────────────────────────
+     블러/그라디언트 없이 완전히 평평한 화이트 + 검정 보더로
+     경계를 잡는 네오브루탈리즘 톤. ink 계열은 이제 옅은 회백색 채움색. */
+  --color-ink: #f5f5f2;
+  --color-ink-2: #eeeeea;
+  --color-ink-3: #e4e4de;
+  --color-line: rgba(18, 18, 15, 0.12);
+  --color-line-2: #12120f;
+  --color-muted: #5c5c58;
+  --color-paper: #14140f;
 
-  /* ── 브랜드 퍼플 포인트 ─────────────────────────────── */
-  --color-accent: #a78bfa;
-  --color-accent-deep: #7c5cf0;
-  --color-accent-soft: #c9b8ff;
-  --color-accent-2: #ff6b6b;
+  /* ── 브랜드 팔레트 — 라임 · 핑크 · 블루 · 민트 + 잉크 블랙 ──────
+     블루 → 메인(버튼/링크) · 라임/핑크/민트 → 홈 카드 로테이션 · 블랙 → 뱃지/보더 */
+  --color-accent: #4fa3e3;
+  --color-accent-deep: #2f7fbf;
+  --color-accent-soft: #2e7fbf;
+  --color-accent-tint: #c9f1de;
+  --color-accent-2: #e5484d;
+  --color-accent-ink: #ffffff;
 
-  /* ── 검증된 카테고리 팔레트 (dark, surface #141417) ──
-     order: violet → aqua → blue → yellow → magenta
-     adjacent CVD ΔE 13.2 · normal-vision ΔE 19.3 · contrast all ≥ 3:1 */
-  --color-s1: #9085e9;
-  --color-s2: #199e70;
-  --color-s3: #3987e5;
-  --color-s4: #c98500;
-  --color-s5: #d55181;
+  --color-lime: #dff24c;
+  --color-pink: #f6c7dc;
+  --color-blue: #4fa3e3;
+  --color-mint: #c9f1de;
+  --color-ink-black: #12120f;
 
-  /* 에스코어 드림 (next/font/local 이 --font-scdream 을 주입) */
-  --font-sans: var(--font-scdream), "Pretendard Variable", Pretendard,
-    -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR",
-    "Malgun Gothic", system-ui, sans-serif;
+  /* ── 카테고리 팔레트 — 큰 면(파스텔)과 달리 얇은 선/막대에서도
+     보이도록 채도·명도를 한 단계 올린 버전 */
+  --color-s1: #4fa3e3;
+  --color-s2: #12120f;
+  --color-s3: #e0729b;
+  --color-s4: #a9c23f;
+  --color-s5: #6fc9a4;
+
+  /* 시스템 기본 글꼴 — OS/브라우저가 제공하는 기본 산세리프 그대로 쓴다 */
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", system-ui,
+    sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
-
-  /* ── 본문 스케일 — 기본값 대비 5% 상향 ──────────────────
-     드림체가 같은 픽셀에서 산세리프보다 작아 보여 소폭만 키웠다.
-     행간도 같은 비율로 올려 줄바꿈 리듬을 유지한다. */
-  --text-xs: 0.79rem;
-  --text-xs--line-height: calc(1.05 / 0.79);
-  --text-sm: 0.92rem;
-  --text-sm--line-height: calc(1.31 / 0.92);
-  --text-base: 1.05rem;
-  --text-base--line-height: calc(1.58 / 1.05);
-  --text-lg: 1.18rem;
-  --text-lg--line-height: calc(1.84 / 1.18);
-  --text-xl: 1.31rem;
-  --text-xl--line-height: calc(1.84 / 1.31);
-  --text-2xl: 1.58rem;
-  --text-2xl--line-height: calc(2.1 / 1.58);
-  --text-3xl: 1.97rem;
-  --text-3xl--line-height: calc(2.36 / 1.97);
 }
 
 html {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 body {
-  background: var(--color-ink);
+  background: #ffffff;
   color: var(--color-paper);
   font-family: var(--font-sans);
-  /* 드림 3(Light)이 기본. 강조는 font-medium(5)·font-semibold(6)로 올린다 */
-  font-weight: 300;
   -webkit-font-smoothing: antialiased;
 }
 
-/* 실어 둔 굵기는 200·300·500·600 뿐이라, 기본 bold 요소를 600 으로 맞춰
-   브라우저가 가짜 굵기를 합성하지 않게 한다 */
-strong,
-b {
-  font-weight: 600;
+/* ── 앱 프레임 ────────────────────────────────────────
+   웹이 아니라 앱이 근본이다 — 실제 폰에서는 화면 전체를 그대로 채우고,
+   데스크톱 브라우저에서는 폰 화면 하나를 들고 보는 것처럼 좁은 프레임으로
+   가운데 띄운다. 프레임에 transform 을 줘서 새 containing block 을 만들면
+   내부의 position:fixed 하단 메뉴바가 진짜 브라우저 뷰포트가 아니라
+   이 프레임 기준으로 고정된다. */
+.app-shell {
+  min-height: 100dvh;
+  width: 100%;
+  background: #eef1e8;
 }
 
-/* 페이지 상단 퍼플 글로우 — 무드보드의 블랙+퍼플 대비 */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0 0 auto 0;
-  height: 520px;
-  pointer-events: none;
-  z-index: 0;
-  background:
-    radial-gradient(60% 100% at 18% 0%, rgba(124, 92, 240, 0.16), transparent 70%),
-    radial-gradient(45% 100% at 88% 4%, rgba(167, 139, 250, 0.09), transparent 70%);
+.app-frame {
+  position: relative;
+  margin: 0 auto;
+  width: 100%;
+  min-height: 100dvh;
+  background: #ffffff;
+}
+
+.app-frame-scroll {
+  min-height: 100dvh;
+}
+
+@media (min-width: 640px) {
+  .app-shell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2.5rem 1rem;
+  }
+
+  /* 폰 목업 — 두꺼운 블랙 베젤 + 다이내믹 아일랜드로 "이건 앱이다"를 바로 보여준다 */
+  .app-frame {
+    width: 446px;
+    height: 876px;
+    max-height: 94vh;
+    min-height: 0;
+    overflow: hidden;
+    border-radius: 56px;
+    border: 14px solid var(--color-ink-black);
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.1),
+      0 40px 80px -24px rgba(0, 0, 0, 0.45);
+    /* translateZ(0) 로 fixed 자식의 containing block 을 프레임으로 한정 */
+    transform: translateZ(0);
+  }
+
+  .app-frame::before {
+    content: "";
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 92px;
+    height: 24px;
+    background: var(--color-ink-black);
+    border-radius: 999px;
+    z-index: 50;
+  }
+
+  .app-frame-scroll {
+    height: 100%;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
 }
 
 ::selection {
   background: var(--color-accent);
-  color: var(--color-ink);
+  color: var(--color-accent-ink);
 }
 
 ::-webkit-scrollbar {
@@ -95,35 +134,101 @@ body::before {
 ::-webkit-scrollbar-thumb {
   background: var(--color-line-2);
   border-radius: 99px;
-  border: 3px solid var(--color-ink);
+  border: 3px solid #ffffff;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #4a4a57;
+  background: #000000;
 }
 
-/* ── 입체감 유틸 ─────────────────────────────────────── */
+/* ── 플랫 카드 · 버튼 유틸 (네오브루탈리즘) ───────────────
+   블러/그라디언트 없이 완전히 평평한 면 + 두꺼운 블랙 보더로 경계를 잡는다. */
 
-/* 카드: 상단 하이라이트 + 바닥 그림자로 살짝 떠 있게 */
+/* 기본 카드: 화이트 + 얇은 보더. 데이터가 많은 화면(발주표 등)에 쓴다 */
 .elev {
-  background: linear-gradient(180deg, #17171b 0%, #131316 100%);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.045),
-    0 1px 2px rgba(0, 0, 0, 0.6),
-    0 12px 32px -12px rgba(0, 0, 0, 0.85);
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
 .elev-hi {
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.07),
-    0 2px 4px rgba(0, 0, 0, 0.5),
-    0 20px 48px -16px rgba(124, 92, 240, 0.28);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
 }
 
-/* 퍼플 글로우 링 — 포커스/활성 상태 */
+/* 포커스/활성 상태 — 블랙 링 */
 .ring-glow {
+  box-shadow: 0 0 0 2px var(--color-ink-black);
+}
+
+/* 홈 화면 히어로 카드용 파스텔 블록 — 라임/핑크/블루/민트를 로테이션한다 */
+.card-lime {
+  background: var(--color-lime);
+}
+.card-pink {
+  background: var(--color-pink);
+}
+.card-blue {
+  background: var(--color-blue);
+}
+.card-mint {
+  background: var(--color-mint);
+}
+
+/* 블랙 원형 뱃지 — 아이콘은 항상 화이트 */
+.badge-dark {
+  background: var(--color-ink-black);
+  color: #ffffff;
+}
+
+/* 주 버튼 — 화이트 + 두꺼운 블랙 보더의 알약 버튼, 유리알 하이라이트로 입체감 */
+.glass-bead {
+  background-color: #ffffff;
+  background-image:
+    radial-gradient(130% 160% at 28% -30%, rgba(255, 255, 255, 0.95), transparent 55%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(0, 0, 0, 0.05) 100%);
+  border: 2.5px solid var(--color-ink-black);
   box-shadow:
-    0 0 0 1px rgba(167, 139, 250, 0.5),
-    0 0 24px -4px rgba(124, 92, 240, 0.55);
+    inset 0 1px 1px rgba(255, 255, 255, 0.9),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.08),
+    0 1px 2px rgba(0, 0, 0, 0.06),
+    0 8px 16px -8px rgba(0, 0, 0, 0.2);
+  transition:
+    filter 0.12s ease,
+    transform 0.1s ease;
+}
+.glass-bead:hover:not(:disabled) {
+  filter: brightness(0.97);
+}
+.glass-bead:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.7),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.1);
+}
+.glass-bead:disabled {
+  background-image: none;
+  background-color: var(--color-ink);
+  border-color: var(--color-line);
+  box-shadow: none;
+  color: var(--color-muted);
+}
+
+/* 홈 카드 전체를 감싸는 큰 버튼 — 파스텔 블록(card-lime 등) 위에 얹어
+   상단 스펙큘러 하이라이트 + 하단 셰이딩으로 유리알처럼 볼록하게 보이게 한다 */
+.glass-bead-soft {
+  background-image:
+    radial-gradient(130% 160% at 22% -25%, rgba(255, 255, 255, 0.55), transparent 55%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(0, 0, 0, 0.16) 100%);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.6),
+    inset 0 -12px 20px -16px rgba(0, 0, 0, 0.35),
+    0 1px 2px rgba(0, 0, 0, 0.08),
+    0 20px 40px -18px rgba(0, 0, 0, 0.28);
+  transition:
+    filter 0.15s ease,
+    transform 0.15s ease;
+}
+.glass-bead-soft:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.03);
 }
 
 /* ── 애니메이션 ──────────────────────────────────────── */
@@ -161,7 +266,7 @@ body::before {
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(167, 139, 250, 0.13),
+    rgba(18, 18, 15, 0.1),
     transparent
   );
   animation: shimmer 1.6s infinite;
@@ -270,26 +375,12 @@ body::before {
 }
 
 /* ── 핀터레스트형 매스너리 ───────────────────────────── */
+/* 앱 프레임 너비(430px)가 근본 — 화면 폭이 아니라 항상 2열로 고정한다 */
 .masonry {
-  column-gap: 16px;
+  column-gap: 12px;
   columns: 2;
-}
-@media (min-width: 640px) {
-  .masonry {
-    columns: 3;
-  }
-}
-@media (min-width: 1024px) {
-  .masonry {
-    columns: 4;
-  }
-}
-@media (min-width: 1400px) {
-  .masonry {
-    columns: 5;
-  }
 }
 .masonry > * {
   break-inside: avoid;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }

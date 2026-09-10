@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Trendloom — 화이트 + 버건디 UI 후보</title>
+<style>
+  :root {
+    --page-bg: #f0ede9;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--page-bg);
+    font-family: "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", -apple-system, sans-serif;
+    color: #1c1c1c;
+    padding: 32px 24px 80px;
+  }
+  h1.page-title { font-size: 20px; margin: 0 0 6px; }
+  p.page-sub { margin: 0 0 28px; color: #6b6b6b; font-size: 13px; line-height: 1.6; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(520px, 1fr));
+    gap: 28px;
+  }
+  @media (max-width: 1140px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+
+  .candidate { display: flex; flex-direction: column; gap: 10px; }
+  .candidate-label {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .candidate-label h2 { font-size: 14px; margin: 0; }
+  .candidate-label span { font-size: 11px; color: #8a8a8a; }
+  .swatches { display: flex; gap: 6px; margin-bottom: 4px; }
+  .swatch {
+    width: 18px; height: 18px; border-radius: 5px;
+    border: 1px solid rgba(0,0,0,0.08);
+  }
+
+  /* ── mockup frame (scoped theme vars applied here) ───────────── */
+  .frame {
+    background: var(--bg);
+    color: var(--text);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    box-shadow: var(--frame-shadow);
+    padding: 22px 22px 26px;
+    font-size: 13px;
+  }
+
+  .m-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 18px; }
+  .m-brand { display: flex; align-items: center; gap: 8px; }
+  .m-logo {
+    width: 26px; height: 26px; border-radius: 8px;
+    background: linear-gradient(160deg, var(--accent), var(--accent-deep));
+  }
+  .m-brand-name { font-size: 16px; font-weight: 700; letter-spacing: -0.02em; }
+  .m-tagline { margin: 6px 0 0; font-size: 11.5px; line-height: 1.6; color: var(--text-muted); max-width: 320px; }
+
+  .m-tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--border); margin-bottom: 14px; }
+  .m-tab {
+    padding: 8px 12px; font-size: 12px; color: var(--text-muted);
+    border-bottom: 2px solid transparent; margin-bottom: -1px;
+  }
+  .m-tab.active { color: var(--text); font-weight: 700; border-color: var(--accent); }
+
+  .m-desc { font-size: 11.5px; color: var(--text-muted); margin: 0 0 14px; }
+
+  .m-cols { display: grid; grid-template-columns: 1.3fr 1fr; gap: 14px; }
+  @media (max-width: 640px) { .m-cols { grid-template-columns: 1fr; } }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 14px;
+    box-shadow: var(--card-shadow);
+  }
+  .card h3 { margin: 0 0 3px; font-size: 12.5px; font-weight: 700; }
+  .card .hint { margin: 0 0 10px; font-size: 10.5px; color: var(--text-muted); }
+
+  .field { margin-bottom: 10px; }
+  .field label { display: block; font-size: 9.5px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px; }
+  .field .box {
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    background: var(--field-bg); padding: 7px 10px; font-size: 12.5px; color: var(--text);
+  }
+
+  .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 12px 0; }
+  .kpi { background: var(--surface-2); border-radius: var(--radius-sm); padding: 9px 10px; border: 1px solid var(--border); }
+  .kpi .k { font-size: 9.5px; color: var(--text-muted); margin-bottom: 3px; }
+  .kpi .v { font-size: 14px; font-weight: 700; }
+  .kpi .v.accent { color: var(--accent); }
+
+  .pill-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+  .pill {
+    font-size: 10px; padding: 3px 9px; border-radius: 99px; border: 1px solid var(--pill-border);
+    background: var(--pill-bg); color: var(--pill-text); font-weight: 600;
+  }
+  .pill.plain { border-color: var(--border); background: var(--surface-2); color: var(--text-muted); }
+
+  .btn-row { display: flex; gap: 8px; }
+  .btn {
+    border: none; border-radius: var(--radius-sm); padding: 8px 14px;
+    font-size: 12px; font-weight: 700; cursor: default;
+  }
+  .btn-primary {
+    background: linear-gradient(180deg, var(--accent), var(--accent-deep));
+    color: var(--accent-ink);
+    box-shadow: 0 6px 16px -6px color-mix(in srgb, var(--accent) 55%, transparent);
+  }
+  .btn-secondary {
+    background: transparent; color: var(--text); border: 1px solid var(--border);
+  }
+
+  .bars { display: flex; flex-direction: column; gap: 7px; margin-top: 4px; }
+  .bar-row { display: flex; align-items: center; gap: 8px; }
+  .bar-row .name { width: 54px; font-size: 10.5px; color: var(--text-muted); flex-shrink: 0; }
+  .bar-track { flex: 1; height: 8px; border-radius: 99px; background: var(--surface-2); overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 99px; }
+  .bar-row .val { width: 30px; text-align: right; font-size: 10.5px; color: var(--text-muted); }
+
+  .kv { margin-top: 10px; }
+  .kv-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 11.5px; }
+  .kv-row:last-child { border-bottom: none; }
+  .kv-row .k { color: var(--text-muted); }
+
+  .board { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 16px; }
+  .thumb { position: relative; aspect-ratio: 3/4; border-radius: var(--radius-sm); border: 1px solid var(--border); overflow: hidden; }
+  .thumb .tag {
+    position: absolute; left: 5px; bottom: 5px; font-size: 8.5px; font-weight: 700;
+    padding: 2px 6px; border-radius: 99px; background: var(--accent); color: var(--accent-ink);
+  }
+
+  .m-footer { margin-top: 16px; padding-top: 10px; border-top: 1px solid var(--border); font-size: 9.5px; color: var(--text-muted); line-height: 1.6; }
+</style>
+</head>
+<body>
+
+<h1 class="page-title">Trendloom UI 후보 — 화이트 배경 + 버건디 포인트 (4종)</h1>
+<p class="page-sub">기존 다크 테마를 걷어내고, 실제 화면 구성(헤더 · 탭 · 발주·가격 카드 · 스타일 보드)을 그대로 살려서 톤만 4가지로 바꿔봤습니다. 마음에 드는 후보를 골라주시면 그 팔레트로 globals.css / ui.tsx 전체를 교체할게요.</p>
+
+<div class="grid" id="grid"></div>
+
+<script>
+const THEMES = {
+  a: {
+    label: "A · 에디토리얼 아이보리",
+    note: "웜톤 아이보리 + 딥버건디, 잡지 화보 느낌",
+    vars: {
+      "--bg": "#faf7f3", "--surface": "#ffffff", "--surface-2": "#f5efe8",
+      "--border": "#e7ddd2", "--text": "#231b19", "--text-muted": "#8c7d71",
+      "--accent": "#7c2436", "--accent-deep": "#571725", "--accent-ink": "#fdf3f0",
+      "--field-bg": "#fbf8f4",
+      "--pill-bg": "#f3dee1", "--pill-border": "#e3c2c8", "--pill-text": "#7c2436",
+      "--radius-lg": "22px", "--radius-md": "16px", "--radius-sm": "10px",
+      "--frame-shadow": "0 24px 48px -28px rgba(60,30,30,0.28)",
+      "--card-shadow": "0 1px 2px rgba(60,30,30,0.05)",
+    },
+    chart: ["#7c2436", "#b98a3e", "#4f6b52", "#3f5468", "#a1586b"],
+    thumbs: ["#7c2436", "#e8d6c8", "#4f6b52", "#b98a3e", "#e3c2c8"],
+  },
+  b: {
+    label: "B · 클린 화이트 + 버건디",
+    note: "순백 배경, 차가운 뉴트럴, 버건디는 강조 전용 — 가장 “깔끔한” 톤",
+    vars: {
+      "--bg": "#ffffff", "--surface": "#ffffff", "--surface-2": "#f7f7f8",
+      "--border": "#e7e8ec", "--text": "#16181d", "--text-muted": "#71757e",
+      "--accent": "#9c2b45", "--accent-deep": "#711f34", "--accent-ink": "#ffffff",
+      "--field-bg": "#fafafb",
+      "--pill-bg": "#fbe4e9", "--pill-border": "#f2c4cf", "--pill-text": "#9c2b45",
+      "--radius-lg": "20px", "--radius-md": "14px", "--radius-sm": "10px",
+      "--frame-shadow": "0 20px 44px -30px rgba(20,20,30,0.18)",
+      "--card-shadow": "0 1px 2px rgba(20,20,30,0.04)",
+    },
+    chart: ["#9c2b45", "#475569", "#c08a2e", "#2f7d75", "#7a4a6b"],
+    thumbs: ["#9c2b45", "#eef0f3", "#475569", "#f7d7de", "#c08a2e"],
+  },
+  c: {
+    label: "C · 미니멀 모노 플랫",
+    note: "그림자 없이 플랫, 얇은 보더, 버건디는 CTA/활성 상태에만",
+    vars: {
+      "--bg": "#ffffff", "--surface": "#ffffff", "--surface-2": "#f4f4f4",
+      "--border": "#dedede", "--text": "#111111", "--text-muted": "#767676",
+      "--accent": "#8a1f34", "--accent-deep": "#671726", "--accent-ink": "#ffffff",
+      "--field-bg": "#ffffff",
+      "--pill-bg": "#ffffff", "--pill-border": "#8a1f34", "--pill-text": "#8a1f34",
+      "--radius-lg": "6px", "--radius-md": "4px", "--radius-sm": "4px",
+      "--frame-shadow": "none",
+      "--card-shadow": "none",
+    },
+    chart: ["#8a1f34", "#111111", "#767676", "#b9b9b9", "#d6a9b1"],
+    thumbs: ["#8a1f34", "#111111", "#f4f4f4", "#767676", "#d6a9b1"],
+  },
+  d: {
+    label: "D · 와인 & 리넨",
+    note: "리넨 배경 + 골드 헤어라인, 부티크 매거진 톤",
+    vars: {
+      "--bg": "#f6f1ea", "--surface": "#fffdfa", "--surface-2": "#eee4d8",
+      "--border": "#ded0bd", "--text": "#241a15", "--text-muted": "#9c8a76",
+      "--accent": "#6e1f2f", "--accent-deep": "#43121c", "--accent-ink": "#fbeee2",
+      "--field-bg": "#fbf7f1",
+      "--pill-bg": "#e9d3c6", "--pill-border": "#d3ac8d", "--pill-text": "#6e1f2f",
+      "--radius-lg": "18px", "--radius-md": "12px", "--radius-sm": "8px",
+      "--frame-shadow": "0 24px 50px -30px rgba(60,30,10,0.30)",
+      "--card-shadow": "0 1px 2px rgba(60,30,10,0.06)",
+    },
+    chart: ["#6e1f2f", "#b08d57", "#5c6b4f", "#3f5468", "#a1586b"],
+    thumbs: ["#6e1f2f", "#eee4d8", "#b08d57", "#5c6b4f", "#d3ac8d"],
+  },
+};
+
+function mockupHTML(t) {
+  const bars = [
+    ["아우터", 92], ["니트", 74], ["팬츠", 61], ["원피스", 55], ["액세서리", 38],
+  ];
+  return `
+    <div class="m-header">
+      <div>
+        <div class="m-brand">
+          <div class="m-logo"></div>
+          <div class="m-brand-name">Trendloom</div>
+        </div>
+        <p class="m-tagline">패션 MD의 시즌 기획 → 발주·가격 결정 → 리뷰 피드백까지, 데이터와 AI로.</p>
+      </div>
+    </div>
+    <nav class="m-tabs">
+      <div class="m-tab">스타일 보드</div>
+      <div class="m-tab active">발주 · 가격</div>
+      <div class="m-tab">리뷰 분석</div>
+      <div class="m-tab">상품 태거</div>
+    </nav>
+    <p class="m-desc">원가와 예상 수요로 발주량과 판매가를 잡고, 판매율 · 재고 · 영업이익까지 시뮬레이션</p>
+    <div class="m-cols">
+      <div class="card">
+        <h3>발주 · 가격 시뮬레이터</h3>
+        <p class="hint">기본 가정값으로 자동 계산되며, 슬라이더로 조정할 수 있어요</p>
+        <div class="field"><label>원가 (개당)</label><div class="box">12,400원</div></div>
+        <div class="field"><label>판매가</label><div class="box">39,000원</div></div>
+        <div class="kpis">
+          <div class="kpi"><div class="k">예상 매출</div><div class="v">4,290만</div></div>
+          <div class="kpi"><div class="k">영업이익</div><div class="v accent">1,180만</div></div>
+          <div class="kpi"><div class="k">판매율</div><div class="v">68%</div></div>
+        </div>
+        <div class="pill-row">
+          <span class="pill">재고 안전</span>
+          <span class="pill plain">가격탄력성 보통</span>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary">발주안 저장</button>
+          <button class="btn btn-secondary">시나리오 비교</button>
+        </div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:14px;">
+        <div class="card">
+          <h3>카테고리 트렌드</h3>
+          <div class="bars">
+            ${bars.map((b, i) => `
+              <div class="bar-row">
+                <span class="name">${b[0]}</span>
+                <div class="bar-track"><div class="bar-fill" style="width:${b[1]}%; background:${t.chart[i]}"></div></div>
+                <span class="val">${b[1]}</span>
+              </div>`).join("")}
+          </div>
+        </div>
+        <div class="card">
+          <h3>기획 요약</h3>
+          <div class="kv">
+            <div class="kv-row"><span class="k">최소 발주</span><span>300장</span></div>
+            <div class="kv-row"><span class="k">리드타임</span><span>18일</span></div>
+            <div class="kv-row"><span class="k">손익분기</span><span>203장</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="board">
+      ${t.thumbs.map((c, i) => `<div class="thumb" style="background:${c}">${i === 0 ? '<span class="tag">BEST</span>' : ''}</div>`).join("")}
+    </div>
+    <div class="m-footer">레퍼런스: 네이버 이미지 검색 API · 분석: Claude. AI 출력은 의사결정 보조용이며 발주 전 실제 데이터로 검증하세요.</div>
+  `;
+}
+
+const grid = document.getElementById("grid");
+Object.entries(THEMES).forEach(([key, t]) => {
+  const wrap = document.createElement("div");
+  wrap.className = "candidate";
+
+  const varsCss = Object.entries(t.vars).map(([k, v]) => `${k}:${v}`).join(";");
+  const swatchKeys = ["--bg", "--surface-2", "--accent", "--accent-deep"];
+
+  wrap.innerHTML = `
+    <div class="candidate-label">
+      <h2>${t.label}</h2>
+      <span>${t.note}</span>
+    </div>
+    <div class="swatches">
+      ${swatchKeys.map(k => `<div class="swatch" style="background:${t.vars[k]}" title="${k}: ${t.vars[k]}"></div>`).join("")}
+    </div>
+    <div class="frame" style="${varsCss}">${mockupHTML(t)}</div>
+  `;
+  grid.appendChild(wrap);
+});
+</script>
+</body>
+</html>

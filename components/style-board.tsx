@@ -132,10 +132,10 @@ export function StyleBoard() {
         title="어떤 무드를 찾고 계세요?"
         hint="키워드 최대 4개 · 네이버 이미지 검색으로 레퍼런스를 모으고, 마음에 드는 컷을 핀하면 AI가 무드 브리프로 정리합니다"
       >
-        <div className="grid gap-5 lg:grid-cols-[1.3fr_1fr]">
+        <div className="grid gap-5 @lg:grid-cols-[1.3fr_1fr]">
           <div className="space-y-4">
             <Field label="키워드">
-              <div className="flex flex-wrap items-center gap-2 rounded-lg border border-line-2 bg-ink p-2">
+              <div className="flex flex-wrap items-center gap-2 rounded-lg border border-line-2 bg-ink p-2 backdrop-blur-sm">
                 {keywords.map((k) => (
                   <span
                     key={k}
@@ -269,7 +269,7 @@ export function StyleBoard() {
                   setHiRes(e.target.checked);
                   setFellBack(new Set());
                 }}
-                className="size-3.5 accent-[#a78bfa]"
+                className="size-3.5 accent-[#4fa3e3]"
               />
               고화질로 보기
               <span className="text-[11px] text-muted/70">
@@ -415,7 +415,7 @@ export function StyleBoard() {
 
           <Card title="시즌 컬러 팔레트" hint="헥스를 클릭하면 복사됩니다 · 원단 발주 시 참고">
             {brief?.palette?.length ? (
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-3 @sm:grid-cols-2">
                 {brief.palette.map((c, i) => (
                   <button
                     key={i}
@@ -446,7 +446,7 @@ export function StyleBoard() {
             )}
           </Card>
 
-          <div className="grid gap-6 lg:grid-cols-3">
+          <div className="grid gap-6 @lg:grid-cols-3">
             <Card title="핵심 실루엣">
               <TagList items={brief?.silhouettes} />
             </Card>
@@ -459,7 +459,7 @@ export function StyleBoard() {
           </div>
 
           <Card title="스타일링 조합" hint="바로 판매 가능한 아이템 구성으로 제안">
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid gap-4 @md:grid-cols-3">
               {(brief?.styling ?? []).map((s, i) => (
                 <article key={i} className="rounded-lg border border-line bg-ink p-4">
                   <h4 className="text-sm font-semibold leading-snug">{s?.title}</h4>

@@ -46,13 +46,13 @@ export function Splash() {
         phase === "out" ? "splash-out" : ""
       }`}
     >
-      {/* 상단 퍼플 글로우 — 본문과 같은 분위기 */}
+      {/* 상단 라임 글로우 — 본문과 같은 분위기 */}
       <span
         aria-hidden="true"
         className="pointer-events-none absolute inset-x-0 top-0 h-[420px]"
         style={{
           background:
-            "radial-gradient(55% 100% at 50% 0%, rgba(124,92,240,0.20), transparent 72%)",
+            "radial-gradient(55% 100% at 50% 0%, rgba(223,242,76,0.28), transparent 72%)",
         }}
       />
 
