@@ -102,3 +102,14 @@ export const styleBoardSchema = z.object({
 });
 
 export type StyleBoard = z.infer<typeof styleBoardSchema>;
+
+/** Trend Intelligence — MD READ: 데이터 해석 + 질문. 발주량/가격은 절대 추천하지 않는다 */
+export const trendInsightSchema = z.object({
+  summary: z.string().describe("지금 어떤 신호가 움직이는지 1문장. 전달받은 수치만 인용"),
+  reason: z.string().describe("여러 채널이 같은 방향인지, 어느 단계로 보이는지 1문장"),
+  mdQuestion: z
+    .string()
+    .describe("MD가 스스로 판단하도록 던지는 질문 1문장. 발주량·가격·매입 결정을 대신 내리지 않는다"),
+});
+
+export type TrendInsight = z.infer<typeof trendInsightSchema>;

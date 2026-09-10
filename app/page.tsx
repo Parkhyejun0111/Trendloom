@@ -5,10 +5,11 @@ import { Planner } from "@/components/planner";
 import { ProductTagger } from "@/components/product-tagger";
 import { StyleBoard } from "@/components/style-board";
 import { Home } from "@/components/home";
+import { Trend } from "@/components/trend-dashboard";
 import { BottomNav, type ToolId } from "@/components/bottom-nav";
 import { Logo } from "@/components/brand";
 
-const TOOL_META: Record<ToolId, { label: string; title: string; hint: string }> = {
+const TOOL_META: Record<Exclude<ToolId, "trend">, { label: string; title: string; hint: string }> = {
   board: {
     label: "스타일 보드",
     title: "어떤 무드를 찾고 계세요?",
@@ -30,30 +31,41 @@ type Screen = "home" | ToolId;
 
 export default function Page() {
   const [screen, setScreen] = useState<Screen>("home");
+  const isTrend = screen === "trend";
+  // board 카드는 이제 네이비(어두운 색)라 안의 글자를 흰색으로 바꿔야 읽힌다
+  const heroDark = screen === "board";
 
   return (
     <main className="@container relative z-10 w-full px-5 pb-28 pt-8">
-      <header className="mb-8">
+      <header
+        className={
+          isTrend
+            ? "page-hero-trend -mx-5 -mt-8 px-5 pb-5 pt-8"
+            : "mb-8"
+        }
+      >
         <button type="button" onClick={() => setScreen("home")} className="text-left">
           <div className="flex items-center gap-3">
             <Logo size={30} />
-            <h1 className="text-xl font-extrabold tracking-tight">Trendloom</h1>
+            <h1 className={`text-xl font-extrabold tracking-tight ${isTrend ? "text-white" : ""}`}>
+              Trendloom
+            </h1>
           </div>
         </button>
       </header>
 
-      {screen === "home" ? (
-        <Home onNavigate={setScreen} />
-      ) : (
+      {screen === "home" && <Home onNavigate={setScreen} />}
+      {screen === "trend" && <Trend />}
+      {screen !== "home" && screen !== "trend" && (
         <>
-          <div className={`page-hero-${screen} mb-6 rounded-[26px] px-4 pb-4 pt-4`}>
-            <p className="text-sm font-extrabold tracking-tight text-paper">
+          <div className={`page-hero-${screen} glass-bead-soft-static mb-6 rounded-[26px] px-4 pb-4 pt-4`}>
+            <p className={`text-sm font-extrabold tracking-tight ${heroDark ? "text-white" : "text-paper"}`}>
               {TOOL_META[screen].label}
             </p>
-            <h2 className="mt-2 text-base font-extrabold tracking-tight text-paper">
+            <h2 className={`mt-2 text-base font-extrabold tracking-tight ${heroDark ? "text-white" : "text-paper"}`}>
               {TOOL_META[screen].title}
             </h2>
-            <p className="mt-1.5 text-xs leading-relaxed text-paper/65">
+            <p className={`mt-1.5 text-xs leading-relaxed ${heroDark ? "text-white/70" : "text-paper/65"}`}>
               {TOOL_META[screen].hint}
             </p>
           </div>

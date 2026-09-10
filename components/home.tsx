@@ -10,6 +10,8 @@ const FEATURES: {
   desc: string;
   Icon: typeof IconBoard;
   card: string;
+  /** card-lime(이제 네이비)처럼 어두운 카드는 글자를 흰색으로 바꿔야 읽힌다 */
+  dark?: boolean;
 }[] = [
   {
     id: "board",
@@ -17,6 +19,7 @@ const FEATURES: {
     desc: "레퍼런스를 모아 놓고 시즌 팔레트와 실루엣을 뽑아내기",
     Icon: IconBoard,
     card: "card-lime",
+    dark: true,
   },
   {
     id: "plan",
@@ -137,10 +140,14 @@ export function Home({ onNavigate }: { onNavigate: (id: ToolId) => void }) {
                 <f.Icon className="size-6" />
               </span>
               <span>
-                <span className="block text-2xl font-extrabold tracking-tight text-paper">
+                <span
+                  className={`block text-2xl font-extrabold tracking-tight ${f.dark ? "text-white" : "text-trend-navy"}`}
+                >
                   {f.label}
                 </span>
-                <span className="mt-2 block text-sm leading-relaxed text-paper/70">{f.desc}</span>
+                <span className={`mt-2 block text-sm leading-relaxed ${f.dark ? "text-white/70" : "text-trend-navy/70"}`}>
+                  {f.desc}
+                </span>
               </span>
             </button>
           );

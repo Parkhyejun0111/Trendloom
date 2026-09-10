@@ -1,12 +1,13 @@
 "use client";
 
-import { IconBoard, IconHome, IconPlan, IconTagger } from "./icons";
+import { IconBoard, IconHome, IconPlan, IconTagger, IconTrend } from "./icons";
 
-export type ToolId = "board" | "plan" | "tagger";
+export type ToolId = "trend" | "board" | "plan" | "tagger";
 export type NavId = "home" | ToolId;
 
 const ITEMS: { id: NavId; label: string; Icon: typeof IconBoard }[] = [
   { id: "home", label: "홈", Icon: IconHome },
+  { id: "trend", label: "트렌드", Icon: IconTrend },
   { id: "board", label: "스타일 보드", Icon: IconBoard },
   { id: "plan", label: "발주·가격", Icon: IconPlan },
   { id: "tagger", label: "상품 태거", Icon: IconTagger },
@@ -23,7 +24,7 @@ export function BottomNav({
   return (
     <nav
       aria-label="주요 기능"
-      className="badge-dark fixed inset-x-0 bottom-5 z-40 mx-auto flex w-fit gap-1 rounded-[32px] p-1.5"
+      className="nav-glass fixed inset-x-0 bottom-5 z-40 mx-auto flex w-fit gap-1 rounded-[32px] p-1.5"
     >
       {ITEMS.map(({ id, label, Icon }) => {
         const isActive = active === id;
@@ -35,8 +36,8 @@ export function BottomNav({
             aria-current={isActive ? "page" : undefined}
             className={`flex flex-col items-center gap-1 rounded-3xl px-3 py-2 text-[10.5px] font-medium transition ${
               isActive
-                ? "glass-bead-soft bg-lime text-paper"
-                : "text-white/70 hover:text-white"
+                ? "glass-bead-soft bg-trend-pink text-trend-navy"
+                : "text-ink-black/50 hover:text-ink-black"
             }`}
           >
             <Icon className="size-[18px] shrink-0" />

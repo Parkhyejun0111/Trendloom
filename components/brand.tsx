@@ -32,9 +32,9 @@ export function Logo({ size = 34 }: { size?: number }) {
       />
 
       {/* 상승 바 */}
-      <rect x="10.4" y="23" width="2.7" height="3.4" rx="1.2" fill="#dff24c" />
-      <rect x="14.6" y="21" width="2.7" height="5.4" rx="1.2" fill="#dff24c" />
-      <rect x="18.8" y="19" width="2.7" height="7.4" rx="1.2" fill="#dff24c" />
+      <rect x="10.4" y="23" width="2.7" height="3.4" rx="1.2" fill="#ffd6e3" />
+      <rect x="14.6" y="21" width="2.7" height="5.4" rx="1.2" fill="#ffd6e3" />
+      <rect x="18.8" y="19" width="2.7" height="7.4" rx="1.2" fill="#ffd6e3" />
     </svg>
   );
 }

@@ -2,11 +2,14 @@
 
 import { useId } from "react";
 
+/** Trend Intelligence 전용 시리즈 컬러 — 네이비 고정. 차트마다 색을 무작위로 바꾸지 않는다 */
+export const TREND_LINE_COLOR = "#02075D";
+
 /**
  * 브랜드 팔레트 그대로 쓰는 카테고리 컬러 (light, surface #ffffff) — 순서 고정, 순환 금지.
- * 블루(메인) → 잉크블랙 → 로즈 → 올리브라임 → 민트
+ * 네이비(메인) → 잉크블랙 → 딥핑크 → 그레이 → 슬레이트 네이비
  */
-export const SERIES = ["#4fa3e3", "#12120f", "#e0729b", "#a9c23f", "#6fc9a4"];
+export const SERIES = ["#02075D", "#12120f", "#D6739A", "#8B94A3", "#5B6E9E"];
 
 const SURFACE = "#ffffff";
 
@@ -98,5 +101,133 @@ function Sparkline({ data, color }: { data: number[]; color: string }) {
         strokeWidth={1.6}
       />
     </svg>
+  );
+}
+
+/* ================================================================== */
+/* Trend Intelligence — Interest Line Chart (축/단위를 숨기지 않는다)   */
+/* ================================================================== */
+
+export function TrendLineChart({
+  series,
+  color = TREND_LINE_COLOR,
+}: {
+  /** 최근 N주 관심도(0~100), 오래된 값이 먼저 온다 */
+  series: number[];
+  color?: string;
+}) {
+  const id = useId();
+  const w = 320;
+  const h = 140;
+  const padTop = 10;
+  const padBottom = 20;
+  const innerH = h - padTop - padBottom;
+  const x = (i: number) => (i / Math.max(1, series.length - 1)) * w;
+  const y = (v: number) => padTop + innerH - (v / 100) * innerH;
+  const line = series.map((v, i) => `${i === 0 ? "M" : "L"}${x(i)},${y(v)}`).join(" ");
+
+  return (
+    <div>
+      <svg viewBox={`0 0 ${w} ${h}`} className="h-[140px] w-full" role="img" aria-label="관심도 추이 라인 차트">
+        <defs>
+          <linearGradient id={`tl-${id}`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={color} stopOpacity="0.22" />
+            <stop offset="100%" stopColor={color} stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        {[0, 50, 100].map((g) => (
+          <g key={g}>
+            <line x1={0} x2={w} y1={y(g)} y2={y(g)} stroke="rgba(2, 7, 93,0.1)" strokeWidth={1} />
+            <text x={2} y={y(g) - 3} fontSize={8} fill="#737983">
+              {g}
+            </text>
+          </g>
+        ))}
+        <path d={`${line} L${w},${y(0)} L0,${y(0)} Z`} fill={`url(#tl-${id})`} />
+        <path d={line} fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+        {series.length > 0 && (
+          <circle cx={x(series.length - 1)} cy={y(series[series.length - 1])} r={3} fill={color} stroke="#fff" strokeWidth={1.6} />
+        )}
+      </svg>
+      <div className="mt-1 flex justify-between text-[10px] text-muted">
+        <span>W1</span>
+        <span>W{Math.ceil(series.length / 2)}</span>
+        <span>W{series.length}</span>
+      </div>
+    </div>
+  );
+}
+
+/* ================================================================== */
+/* Trend Intelligence — Horizontal Bar (순위/세그먼트 비교)             */
+/* ================================================================== */
+
+export function HorizontalBarChart({
+  items,
+  color = TREND_LINE_COLOR,
+  suffix = "%",
+}: {
+  items: { label: string; value: number }[];
+  color?: string;
+  suffix?: string;
+}) {
+  const max = Math.max(1, ...items.map((it) => Math.abs(it.value)));
+  return (
+    <div className="space-y-3">
+      {items.map((it) => (
+        <div key={it.label}>
+          <div className="mb-1 flex items-baseline justify-between text-xs">
+            <span className="text-paper/80">{it.label}</span>
+            <span className="font-bold text-paper">
+              {it.value >= 0 ? "+" : ""}
+              {it.value}
+              {suffix}
+            </span>
+          </div>
+          <div className="h-2 w-full overflow-hidden rounded-full bg-trend-gray/50">
+            <div
+              className="grow-x h-full rounded-full"
+              style={{ width: `${(Math.abs(it.value) / max) * 100}%`, background: color }}
+            />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ================================================================== */
+/* Trend Intelligence — Signal Bars (Search/Shopping/Visual 비교)      */
+/* 합계가 100%가 아닌 값이므로 donut/pie 는 쓰지 않는다 — 큰 숫자 + 막대 + 라벨 */
+/* ================================================================== */
+
+export function SignalBars({
+  items,
+}: {
+  items: { label: string; value: number | null; color?: string }[];
+}) {
+  const available = items.filter((it) => it.value !== null).map((it) => Math.abs(it.value as number));
+  const max = Math.max(1, ...available, 60);
+  return (
+    <div className="space-y-3.5">
+      {items.map((it) => (
+        <div key={it.label}>
+          <div className="flex items-baseline justify-between">
+            <span className="text-xs font-semibold tracking-wide text-muted">{it.label.toUpperCase()}</span>
+            <span className="text-lg font-extrabold tabular-nums text-paper">
+              {it.value === null ? "—" : `${it.value >= 0 ? "+" : ""}${it.value}%`}
+            </span>
+          </div>
+          <div className="mt-1.5 h-2.5 w-full overflow-hidden rounded-full bg-trend-gray/50">
+            {it.value !== null && (
+              <div
+                className="grow-x h-full rounded-full"
+                style={{ width: `${(Math.abs(it.value) / max) * 100}%`, background: it.color ?? TREND_LINE_COLOR }}
+              />
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
   );
 }

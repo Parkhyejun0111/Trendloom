@@ -12,28 +12,41 @@
   --color-muted: #5c5c58;
   --color-paper: #14140f;
 
-  /* ── 브랜드 팔레트 — 라임 · 핑크 · 블루 · 민트 + 잉크 블랙 ──────
-     블루 → 메인(버튼/링크) · 라임/핑크/민트 → 홈 카드 로테이션 · 블랙 → 뱃지/보더 */
-  --color-accent: #4fa3e3;
-  --color-accent-deep: #2f7fbf;
-  --color-accent-soft: #2e7fbf;
-  --color-accent-tint: #c9f1de;
+  /* ── 브랜드 팔레트 — 그레이 · 네이비 · 페일핑크 + 잉크 블랙 ──────
+     네이비 → 메인(버튼/링크) · 네이비/페일핑크/그레이 → 홈 카드 로테이션 · 블랙 → 뱃지/보더
+     (예전 라임/핑크/블루/민트 자리를 그대로 대체 — 클래스명(card-lime 등)은 유지하되
+     실제 색상값만 새 팔레트로 교체했다) */
+  --color-accent: #02075d;
+  --color-accent-deep: #010440;
+  --color-accent-soft: #2b3a73;
+  --color-accent-tint: #ffe3ec;
   --color-accent-2: #e5484d;
   --color-accent-ink: #ffffff;
 
-  --color-lime: #dff24c;
-  --color-pink: #f6c7dc;
-  --color-blue: #4fa3e3;
-  --color-mint: #c9f1de;
+  --color-lime: #02075d;
+  --color-pink: #ffd6e3;
+  --color-blue: #02075d;
+  --color-mint: #d9d9d9;
   --color-ink-black: #12120f;
 
+  /* ── Trend Intelligence 팔레트 — 그레이 · 네이비 · 페일핑크 ──────
+     위 브랜드 팔레트와 같은 3색이다. Trend 화면은 여기 별칭으로 참조해서
+     "색은 장식이 아니라 데이터 의미를 나른다"는 역할(Navy=핵심지표 · Pale Pink=주목 신호 ·
+     Gray=일반 정보)을 이름으로도 드러낸다. */
+  --color-trend-gray: #d9d9d9;
+  --color-trend-navy: #02075d;
+  --color-trend-navy-deep: #010440;
+  --color-trend-pink: #ffd6e3;
+  --color-trend-positive: #1a7a34;
+  --color-trend-negative: #b3261e;
+
   /* ── 카테고리 팔레트 — 큰 면(파스텔)과 달리 얇은 선/막대에서도
-     보이도록 채도·명도를 한 단계 올린 버전 */
-  --color-s1: #4fa3e3;
+     보이도록 채도·명도를 한 단계 올린 버전. 네이비/그레이/핑크 테마에 맞춰 재구성 */
+  --color-s1: #02075d;
   --color-s2: #12120f;
-  --color-s3: #e0729b;
-  --color-s4: #a9c23f;
-  --color-s5: #6fc9a4;
+  --color-s3: #d6739a;
+  --color-s4: #8b94a3;
+  --color-s5: #5b6e9e;
 
   /* 시스템 기본 글꼴 — OS/브라우저가 제공하는 기본 산세리프 그대로 쓴다 */
   --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
@@ -178,29 +191,65 @@ body {
   color: #ffffff;
 }
 
-/* 홈 히어로 배경 — 위아래 끝까지 끊김 없이 브랜드 컬러를 풀어놓은 그라데이션 */
+/* 홈 히어로 배경 — 위아래 끝까지 끊김 없이 브랜드 컬러(네이비·페일핑크·그레이)를 풀어놓은 그라데이션 */
 .hero-gradient {
   background: linear-gradient(
     165deg,
-    rgba(223, 242, 76, 0.42) 0%,
-    rgba(246, 199, 220, 0.4) 42%,
-    rgba(201, 241, 222, 0.42) 78%,
-    rgba(79, 163, 227, 0.28) 100%
+    rgba(2, 7, 93, 0.3) 0%,
+    rgba(255, 214, 227, 0.46) 48%,
+    rgba(217, 217, 217, 0.4) 100%
   );
 }
 
-/* 페이지별 히어로 카드 — 화면 끝까지 안 붙이고 둥근 인셋 카드로 띄운다.
-   헤더의 흰 배경과 만나는 직각 경계선을 없애려고 전면 그라데이션 대신 이 방식을 쓴다.
-   핑크·민트는 원색 자체가 흰색에 가까운 파스텔이라 라임과 나란히 두면 거의 안 보이므로
-   알파를 더 올려서 눈에 띄는 정도를 맞췄다 */
+/* 페이지별 히어로 카드 — 위아래로 옅어지는 그라데이션 대신 flat 컬러 + 유리알 입체감(box-shadow)으로
+   깊이를 준다. app/page.tsx 에서 .glass-bead-soft-static 과 함께 쓴다.
+   board(네이비)는 진한 색이라 안의 글자를 흰색으로 바꿔야 한다 — app/page.tsx 의 heroDark 참고 */
 .page-hero-board {
-  background: linear-gradient(180deg, rgba(223, 242, 76, 0.85) 0%, rgba(223, 242, 76, 0.16) 100%);
+  background-color: var(--color-lime);
 }
 .page-hero-plan {
-  background: linear-gradient(180deg, rgba(246, 199, 220, 0.9) 0%, rgba(246, 199, 220, 0.22) 100%);
+  background-color: var(--color-pink);
 }
 .page-hero-tagger {
-  background: linear-gradient(180deg, rgba(201, 241, 222, 0.9) 0%, rgba(201, 241, 222, 0.22) 100%);
+  background-color: var(--color-mint);
+}
+
+/* Trend 화면 헤더 — 진한 네이비. 다른 페이지의 파스텔 히어로와 달리
+   "지금 시장이 움직이고 있다"는 긴장감을 주려고 어두운 네이비를 쓴다.
+   상단 로고 헤더와 히어로 카드가 같은 flat 컬러를 이어 써서(그라데이션 X)
+   두 블록이 만나는 자리에 색 이음매가 생기지 않는다 — 헤더는 각 없이, 히어로만 하단을 둥글린다. */
+.page-hero-trend {
+  background: var(--color-trend-navy);
+}
+
+/* Trend Hero Card — 아주 연한 페일핑크 배경에 네이비 숫자(스펙 16장) */
+.trend-signal {
+  background: linear-gradient(180deg, rgba(255, 214, 227, 0.85) 0%, rgba(255, 214, 227, 0.32) 100%);
+  border-color: rgba(2, 7, 93, 0.14);
+}
+
+.trend-navy {
+  background: var(--color-trend-navy);
+  color: #ffffff;
+}
+
+.trend-pink {
+  background: var(--color-trend-pink);
+  color: var(--color-trend-navy);
+}
+
+/* 하단 네비게이션 — 화이트 유리알 베이스. 이전엔 너무 투명해서 잘 안 보였던 걸
+   불투명도를 올려 또렷하게 보이게 하되, 블러와 그림자(입체감)는 그대로 유지해 유리 느낌은 남긴다 */
+.nav-glass {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.86) 0%, rgba(255, 255, 255, 0.72) 100%);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.95),
+    inset 0 -10px 18px -14px rgba(0, 0, 0, 0.14),
+    0 1px 2px rgba(0, 0, 0, 0.06),
+    0 20px 44px -18px rgba(0, 0, 0, 0.3);
 }
 
 /* 유리 카드 — 각 화면에서 제일 큰 박스 전용. 반투명 + 블러로 뒤 배경(테마 그라데이션)이 비친다 */
@@ -278,6 +327,21 @@ body {
 .glass-bead-soft:hover {
   transform: translateY(-3px);
   filter: brightness(1.04);
+}
+
+/* 위와 같은 유리알 입체감이지만, 클릭 가능한 카드가 아닌 정적인 헤더/박스에 쓴다
+   (호버 시 떠오르는 효과가 없다 — 페이지 히어로처럼 버튼이 아닌 곳에 적용) */
+.glass-bead-soft-static {
+  background-image:
+    radial-gradient(140% 170% at 20% -30%, rgba(255, 255, 255, 0.75), transparent 50%),
+    radial-gradient(90% 60% at 100% 115%, rgba(0, 0, 0, 0.22), transparent 60%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, rgba(0, 0, 0, 0.2) 100%);
+  box-shadow:
+    inset 0 2px 2px rgba(255, 255, 255, 0.8),
+    inset 0 -18px 26px -18px rgba(0, 0, 0, 0.45),
+    inset 1px 0 1px rgba(255, 255, 255, 0.4),
+    0 2px 3px rgba(0, 0, 0, 0.12),
+    0 28px 48px -18px rgba(0, 0, 0, 0.4);
 }
 
 /* ── 애니메이션 ──────────────────────────────────────── */
