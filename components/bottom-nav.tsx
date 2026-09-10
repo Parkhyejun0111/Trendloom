@@ -1,15 +1,14 @@
 "use client";
 
-import { IconBoard, IconHome, IconPlan, IconReview, IconTagger } from "./icons";
+import { IconBoard, IconHome, IconPlan, IconTagger } from "./icons";
 
-export type ToolId = "board" | "plan" | "review" | "tagger";
+export type ToolId = "board" | "plan" | "tagger";
 export type NavId = "home" | ToolId;
 
 const ITEMS: { id: NavId; label: string; Icon: typeof IconBoard }[] = [
   { id: "home", label: "홈", Icon: IconHome },
   { id: "board", label: "스타일 보드", Icon: IconBoard },
   { id: "plan", label: "발주·가격", Icon: IconPlan },
-  { id: "review", label: "리뷰 분석", Icon: IconReview },
   { id: "tagger", label: "상품 태거", Icon: IconTagger },
 ];
 

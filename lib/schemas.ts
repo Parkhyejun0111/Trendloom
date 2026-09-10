@@ -27,58 +27,6 @@ export const planSchema = z.object({
 
 export type Plan = z.infer<typeof planSchema>;
 
-/** 리뷰 묶음 → 상품 개선 브리프 */
-export const reviewSchema = z.object({
-  headline: z.string().describe("리뷰 전체를 관통하는 한 줄 결론"),
-  sentiment: z.object({
-    positiveRatio: z
-      .number()
-      .describe("긍정 리뷰 비율 추정치 0~100. 정확한 집계가 아니라 추정임"),
-    note: z.string().describe("전반적 반응 한 줄"),
-  }),
-  issues: z
-    .array(
-      z.object({
-        category: z.enum([
-          "사이즈",
-          "핏",
-          "소재",
-          "색상",
-          "품질",
-          "배송",
-          "가격",
-          "기타",
-        ]),
-        summary: z.string().describe("이슈 내용 한 줄"),
-        severity: z.enum(["치명", "주요", "경미"]).describe("구매 결정에 미치는 영향"),
-        frequency: z.enum(["높음", "보통", "낮음"]).describe("리뷰에서 언급된 빈도"),
-        quotes: z.array(z.string()).describe("근거가 되는 실제 리뷰 문장 1~2개 그대로 인용"),
-        action: z.string().describe("MD가 취할 조치"),
-      }),
-    )
-    .describe("발견된 문제 3~6개. 심각한 것부터"),
-  strengths: z
-    .array(
-      z.object({
-        point: z.string().describe("강점 한 줄"),
-        quotes: z.array(z.string()).describe("근거 리뷰 문장 1~2개"),
-      }),
-    )
-    .describe("재생산·마케팅에 쓸 강점 2~4개"),
-  sizeGuidance: z
-    .string()
-    .describe('사이즈 종합 안내. 예: "정사이즈 대비 작게 나옴, 한 치수 업 권장"'),
-  copyFixes: z
-    .array(z.string())
-    .describe("리뷰가 드러낸 오해를 막을 상세페이지·카피 보완 3가지"),
-  reorderSignal: z.object({
-    call: z.enum(["재생산", "보류", "중단"]),
-    reason: z.string().describe("판단 근거 1~2문장"),
-  }),
-});
-
-export type ReviewBrief = z.infer<typeof reviewSchema>;
-
 /** 상품 이미지 → 속성 태깅 + 커머스 카피 */
 export const taggingSchema = z.object({
   attributes: z.object({

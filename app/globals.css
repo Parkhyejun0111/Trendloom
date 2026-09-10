@@ -178,6 +178,14 @@ body {
   color: #ffffff;
 }
 
+/* 홈 히어로 배경 — 화이트 위에 브랜드 컬러를 옅게 풀어놓은 그라데이션 */
+.hero-gradient {
+  background:
+    radial-gradient(120% 100% at 12% 0%, rgba(223, 242, 76, 0.32), transparent 60%),
+    radial-gradient(120% 100% at 88% 8%, rgba(246, 199, 220, 0.32), transparent 60%),
+    radial-gradient(120% 120% at 50% 100%, rgba(201, 241, 222, 0.38), transparent 65%);
+}
+
 /* 주 버튼 — 화이트 + 두꺼운 블랙 보더의 알약 버튼, 유리알 하이라이트로 입체감 */
 .glass-bead {
   background-color: #ffffff;

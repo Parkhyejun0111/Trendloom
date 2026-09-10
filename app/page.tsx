@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Planner } from "@/components/planner";
-import { ReviewAnalyzer } from "@/components/review-analyzer";
 import { ProductTagger } from "@/components/product-tagger";
 import { StyleBoard } from "@/components/style-board";
 import { Home } from "@/components/home";
@@ -17,10 +16,6 @@ const TOOL_META: Record<ToolId, { label: string; desc: string }> = {
   plan: {
     label: "발주 · 가격",
     desc: "원가와 예상 수요로 발주량과 판매가를 잡고, 판매율·재고·영업이익까지 시뮬레이션",
-  },
-  review: {
-    label: "리뷰 분석",
-    desc: "쌓인 리뷰에서 사이즈·소재·불량 이슈를 뽑고 재생산 판단까지",
   },
   tagger: {
     label: "상품 태거",
@@ -51,7 +46,6 @@ export default function Page() {
           <p className="mb-6 text-sm text-muted">{TOOL_META[screen].desc}</p>
           {screen === "board" && <StyleBoard />}
           {screen === "plan" && <Planner />}
-          {screen === "review" && <ReviewAnalyzer />}
           {screen === "tagger" && <ProductTagger />}
         </>
       )}
