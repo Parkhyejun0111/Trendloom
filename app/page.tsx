@@ -41,9 +41,6 @@ export default function Page() {
             <Logo size={30} />
             <h1 className="text-xl font-extrabold tracking-tight">Trendloom</h1>
           </div>
-          <p className="mt-2.5 text-sm leading-relaxed text-muted">
-            패션 MD의 시즌 기획 → 발주·가격 결정 → 리뷰 피드백까지, 데이터와 AI로.
-          </p>
         </button>
       </header>
 
