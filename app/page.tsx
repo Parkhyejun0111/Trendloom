@@ -8,18 +8,21 @@ import { Home } from "@/components/home";
 import { BottomNav, type ToolId } from "@/components/bottom-nav";
 import { Logo } from "@/components/brand";
 
-const TOOL_META: Record<ToolId, { label: string; desc: string }> = {
+const TOOL_META: Record<ToolId, { label: string; title: string; hint: string }> = {
   board: {
     label: "스타일 보드",
-    desc: "레퍼런스를 핀터레스트처럼 모아 놓고, 시즌 팔레트와 실루엣을 뽑아내기",
+    title: "어떤 무드를 찾고 계세요?",
+    hint: "키워드 최대 4개 · 네이버 이미지 검색으로 레퍼런스를 모으고, 마음에 드는 컷을 핀하면 AI가 무드 브리프로 정리합니다",
   },
   plan: {
     label: "발주 · 가격",
-    desc: "원가와 예상 수요로 발주량과 판매가를 잡고, 판매율·재고·영업이익까지 시뮬레이션",
+    title: "발주 수량과 판매가를 정합니다",
+    hint: "입력을 바꾸면 16개 조합이 즉시 다시 계산됩니다 · 숫자는 전부 산식으로 나옵니다",
   },
   tagger: {
     label: "상품 태거",
-    desc: "이미지 한 장으로 속성 태깅 · 머천다이징 판단 · 커머스 카피",
+    title: "상품 이미지",
+    hint: "사입 후보, 샘플 촬영본, 경쟁사 상품 어떤 것이든",
   },
 };
 
@@ -43,14 +46,24 @@ export default function Page() {
         <Home onNavigate={setScreen} />
       ) : (
         <>
-          <p className="mb-6 text-sm text-muted">{TOOL_META[screen].desc}</p>
+          <div className={`page-hero-${screen} mb-6 rounded-[26px] px-4 pb-4 pt-4`}>
+            <p className="text-sm font-extrabold tracking-tight text-paper">
+              {TOOL_META[screen].label}
+            </p>
+            <h2 className="mt-2 text-base font-extrabold tracking-tight text-paper">
+              {TOOL_META[screen].title}
+            </h2>
+            <p className="mt-1.5 text-xs leading-relaxed text-paper/65">
+              {TOOL_META[screen].hint}
+            </p>
+          </div>
           {screen === "board" && <StyleBoard />}
           {screen === "plan" && <Planner />}
           {screen === "tagger" && <ProductTagger />}
         </>
       )}
 
-      <footer className="mt-16 border-t border-line pt-6 text-xs leading-relaxed text-muted">
+      <footer className="mt-32 border-t border-line pt-5 text-[10px] leading-relaxed text-muted/60">
         레퍼런스: 네이버 이미지 검색 API · 분석: Claude. 발주·가격 시뮬레이션의 수치는 입력값에서
         산식으로 계산되며, 특히 주당 예상 판매량과 가격탄력성 가정이 결과를 좌우합니다. AI 출력은
         의사결정 보조용이며 발주 전 실제 매출·원가·재고 데이터로 검증하세요.

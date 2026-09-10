@@ -178,12 +178,51 @@ body {
   color: #ffffff;
 }
 
-/* 홈 히어로 배경 — 화이트 위에 브랜드 컬러를 옅게 풀어놓은 그라데이션 */
+/* 홈 히어로 배경 — 위아래 끝까지 끊김 없이 브랜드 컬러를 풀어놓은 그라데이션 */
 .hero-gradient {
-  background:
-    radial-gradient(120% 100% at 12% 0%, rgba(223, 242, 76, 0.32), transparent 60%),
-    radial-gradient(120% 100% at 88% 8%, rgba(246, 199, 220, 0.32), transparent 60%),
-    radial-gradient(120% 120% at 50% 100%, rgba(201, 241, 222, 0.38), transparent 65%);
+  background: linear-gradient(
+    165deg,
+    rgba(223, 242, 76, 0.42) 0%,
+    rgba(246, 199, 220, 0.4) 42%,
+    rgba(201, 241, 222, 0.42) 78%,
+    rgba(79, 163, 227, 0.28) 100%
+  );
+}
+
+/* 페이지별 히어로 카드 — 화면 끝까지 안 붙이고 둥근 인셋 카드로 띄운다.
+   헤더의 흰 배경과 만나는 직각 경계선을 없애려고 전면 그라데이션 대신 이 방식을 쓴다.
+   핑크·민트는 원색 자체가 흰색에 가까운 파스텔이라 라임과 나란히 두면 거의 안 보이므로
+   알파를 더 올려서 눈에 띄는 정도를 맞췄다 */
+.page-hero-board {
+  background: linear-gradient(180deg, rgba(223, 242, 76, 0.85) 0%, rgba(223, 242, 76, 0.16) 100%);
+}
+.page-hero-plan {
+  background: linear-gradient(180deg, rgba(246, 199, 220, 0.9) 0%, rgba(246, 199, 220, 0.22) 100%);
+}
+.page-hero-tagger {
+  background: linear-gradient(180deg, rgba(201, 241, 222, 0.9) 0%, rgba(201, 241, 222, 0.22) 100%);
+}
+
+/* 유리 카드 — 각 화면에서 제일 큰 박스 전용. 반투명 + 블러로 뒤 배경(테마 그라데이션)이 비친다 */
+.card-glass {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.66) 0%, rgba(255, 255, 255, 0.4) 100%);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-color: rgba(255, 255, 255, 0.6);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.9),
+    inset 0 -14px 22px -18px rgba(0, 0, 0, 0.16),
+    0 1px 2px rgba(0, 0, 0, 0.05),
+    0 32px 56px -26px rgba(0, 0, 0, 0.28);
+}
+
+/* 가로 스크롤 눈금 다이얼 트랙 — 스크롤바는 숨기고 네이티브 스냅 스크롤만 쓴다 */
+.ruler-track {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.ruler-track::-webkit-scrollbar {
+  display: none;
 }
 
 /* 주 버튼 — 화이트 + 두꺼운 블랙 보더의 알약 버튼, 유리알 하이라이트로 입체감 */
@@ -223,20 +262,22 @@ body {
    상단 스펙큘러 하이라이트 + 하단 셰이딩으로 유리알처럼 볼록하게 보이게 한다 */
 .glass-bead-soft {
   background-image:
-    radial-gradient(130% 160% at 22% -25%, rgba(255, 255, 255, 0.55), transparent 55%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(0, 0, 0, 0.16) 100%);
+    radial-gradient(140% 170% at 20% -30%, rgba(255, 255, 255, 0.75), transparent 50%),
+    radial-gradient(90% 60% at 100% 115%, rgba(0, 0, 0, 0.22), transparent 60%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, rgba(0, 0, 0, 0.2) 100%);
   box-shadow:
-    inset 0 1px 1px rgba(255, 255, 255, 0.6),
-    inset 0 -12px 20px -16px rgba(0, 0, 0, 0.35),
-    0 1px 2px rgba(0, 0, 0, 0.08),
-    0 20px 40px -18px rgba(0, 0, 0, 0.28);
+    inset 0 2px 2px rgba(255, 255, 255, 0.8),
+    inset 0 -18px 26px -18px rgba(0, 0, 0, 0.45),
+    inset 1px 0 1px rgba(255, 255, 255, 0.4),
+    0 2px 3px rgba(0, 0, 0, 0.12),
+    0 28px 48px -18px rgba(0, 0, 0, 0.4);
   transition:
     filter 0.15s ease,
     transform 0.15s ease;
 }
 .glass-bead-soft:hover {
-  transform: translateY(-2px);
-  filter: brightness(1.03);
+  transform: translateY(-3px);
+  filter: brightness(1.04);
 }
 
 /* ── 애니메이션 ──────────────────────────────────────── */

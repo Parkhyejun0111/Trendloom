@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Trendloom — 히어로 카드, 흰 박스 제거</title>
+<style>
+  :root {
+    --lime: #dff24c; --pink: #f6c7dc; --blue: #4fa3e3; --mint: #c9f1de;
+    --ink: #12120f; --paper: #14140f; --muted: #5c5c58; --line: rgba(18,18,15,0.16);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: #eef1e8;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    color: var(--paper); padding: 32px 24px 80px;
+  }
+  h1.page-title { font-size: 20px; margin: 0 0 6px; }
+  p.page-sub { margin: 0 0 28px; color: var(--muted); font-size: 13px; line-height: 1.6; max-width: 760px; }
+  .grid { display: grid; grid-template-columns: repeat(2, minmax(300px, 1fr)); gap: 28px; }
+  @media (max-width: 820px) { .grid { grid-template-columns: 1fr; max-width: 380px; } }
+
+  .candidate-label { margin-bottom: 10px; }
+  .candidate-label h2 { font-size: 14px; margin: 0 0 2px; }
+  .candidate-label span { font-size: 11.5px; color: var(--muted); display:block; line-height:1.5; }
+
+  .frame {
+    width: 100%; height: 700px; background: #fff; border-radius: 30px;
+    border: 8px solid var(--ink); overflow: hidden; position: relative;
+  }
+  .scroll { position:absolute; inset:0; overflow-y:auto; }
+  .logo-row { display:flex; align-items:center; gap:8px; font-weight:800; font-size:15px; padding: 16px 16px 0; }
+  .logo { width:24px; height:24px; border-radius:8px; background:var(--ink); }
+
+  .hero { margin: 12px; border-radius: 26px; padding: 14px 16px 18px;
+    background: linear-gradient(180deg, rgba(223,242,76,0.85) 0%, rgba(223,242,76,0.18) 100%); }
+  .page-h { font-size: 15px; font-weight: 800; margin: 6px 0 14px; }
+  .hero-title { font-size: 15px; font-weight: 800; margin: 0 0 4px; }
+  .hero-hint { font-size: 11.5px; color: rgba(20,20,15,0.65); line-height: 1.5; margin: 0; }
+
+  .white-card { background:#fff; border:1.5px solid var(--line); border-radius:20px; padding: 14px; }
+
+  .row { display:flex; align-items:center; justify-content:space-between; padding:11px 2px; border-bottom:1.5px solid var(--line); font-size:12.5px; }
+  .row:last-child { border-bottom: none; }
+  .row .v { font-weight:800; }
+  .row.on-hero { border-bottom-color: rgba(20,20,15,0.14); }
+
+  .btn { display:inline-flex; align-items:center; border:2px solid var(--ink); background:#fff;
+    border-radius:999px; padding:9px 18px; font-size:12.5px; font-weight:800; margin-top: 14px; }
+
+  .below-card { margin: 4px 16px 16px; }
+</style>
+</head>
+<body>
+
+<h1 class="page-title">Trendloom — 둥근 히어로 카드에서 흰 박스를 빼면?</h1>
+<p class="page-sub">
+  "발주 수량과 판매가를 정합니다" 제목/설명을 감싸던 흰 박스를 없앤 두 가지 버전이에요.
+  왼쪽은 텍스트만 색 카드에 올리고 필드 목록은 아래 별도 흰 카드에 남기는 방식, 오른쪽은 필드 목록까지 전부
+  색 카드 안에 통째로 넣는 방식입니다.
+</p>
+
+<div class="grid" id="grid"></div>
+
+<script>
+const CANDIDATES = [
+  {
+    key: "a",
+    label: "A · 제목만 카드 위에, 필드는 아래 흰 카드",
+    note: "히어로 카드 안엔 페이지 제목 + 안내문만. 실제 입력 리스트는 원래대로 별도 흰 카드에 있음 — 구조 변화가 제일 적음.",
+    body: `
+      <div class="logo-row"><div class="logo"></div>Trendloom</div>
+      <div class="hero">
+        <div class="page-h">발주 · 가격</div>
+        <div class="hero-title">발주 수량과 판매가를 정합니다</div>
+        <p class="hero-hint">입력을 바꾸면 16개 조합이 즉시 다시 계산됩니다 · 숫자는 전부 산식으로 나옵니다</p>
+      </div>
+      <div class="below-card white-card">
+        <div class="row"><span>아이템</span><span class="v">오버핏 울 블렌드 자켓</span></div>
+        <div class="row"><span>원가</span><span class="v">35,000원</span></div>
+        <div class="row"><span>기준 판매가</span><span class="v">99,000원</span></div>
+        <div class="row"><span>주당 예상 판매량</span><span class="v">600장</span></div>
+        <div class="row"><span>가격탄력성</span><span class="v">-1.5</span></div>
+        <div class="row"><span>시즌 길이</span><span class="v">16주</span></div>
+      </div>
+    `,
+  },
+  {
+    key: "b",
+    label: "B · 필드 목록까지 전부 카드 안에",
+    note: "흰 박스가 화면에서 아예 사라짐 — 페이지 제목부터 입력 항목까지 색 카드 하나로 이어짐. 훨씬 화끈하지만 흰 카드가 주던 '입력 영역' 구분감은 옅어짐.",
+    body: `
+      <div class="logo-row"><div class="logo"></div>Trendloom</div>
+      <div class="hero">
+        <div class="page-h">발주 · 가격</div>
+        <div class="hero-title">발주 수량과 판매가를 정합니다</div>
+        <p class="hero-hint" style="margin-bottom:10px;">입력을 바꾸면 16개 조합이 즉시 다시 계산됩니다 · 숫자는 전부 산식으로 나옵니다</p>
+        <div class="row on-hero"><span>아이템</span><span class="v">오버핏 울 블렌드 자켓</span></div>
+        <div class="row on-hero"><span>원가</span><span class="v">35,000원</span></div>
+        <div class="row on-hero"><span>기준 판매가</span><span class="v">99,000원</span></div>
+        <div class="row on-hero"><span>주당 예상 판매량</span><span class="v">600장</span></div>
+        <div class="row on-hero"><span>가격탄력성</span><span class="v">-1.5</span></div>
+        <div class="row on-hero" style="border-bottom:none;"><span>시즌 길이</span><span class="v">16주</span></div>
+        <div class="btn">AI 실행 판단 받기</div>
+      </div>
+    `,
+  },
+];
+
+const grid = document.getElementById("grid");
+CANDIDATES.forEach((c) => {
+  const wrap = document.createElement("div");
+  wrap.innerHTML = `
+    <div class="candidate-label"><h2>${c.label}</h2><span>${c.note}</span></div>
+    <div class="frame"><div class="scroll">${c.body}</div></div>
+  `;
+  grid.appendChild(wrap);
+});
+</script>
+</body>
+</html>

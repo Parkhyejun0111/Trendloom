@@ -49,7 +49,7 @@ export function ProductTagger() {
     <div className="grid gap-6 @lg:grid-cols-[380px_1fr]">
       {/* ── 업로드 ─────────────────────────────────────────── */}
       <div className="space-y-4">
-        <Card title="상품 이미지" hint="사입 후보, 샘플 촬영본, 경쟁사 상품 어떤 것이든">
+        <Card className="card-glass">
           <div
             onDragOver={(e) => e.preventDefault()}
             onDrop={(e) => {

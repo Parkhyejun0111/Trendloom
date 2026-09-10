@@ -128,10 +128,7 @@ export function StyleBoard() {
   return (
     <div className="space-y-6">
       {/* ── 입력 ───────────────────────────────────────────── */}
-      <Card
-        title="어떤 무드를 찾고 계세요?"
-        hint="키워드 최대 4개 · 네이버 이미지 검색으로 레퍼런스를 모으고, 마음에 드는 컷을 핀하면 AI가 무드 브리프로 정리합니다"
-      >
+      <Card className="card-glass">
         <div className="grid gap-5 @lg:grid-cols-[1.3fr_1fr]">
           <div className="space-y-4">
             <Field label="키워드">

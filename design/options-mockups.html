@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Trendloom — 옵션 간소화 후보</title>
+<style>
+  :root {
+    --lime: #dff24c; --pink: #f6c7dc; --blue: #4fa3e3; --mint: #c9f1de;
+    --ink: #12120f; --paper: #14140f; --muted: #5c5c58; --line: rgba(18,18,15,0.14);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: #eef1e8;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    color: var(--paper); padding: 32px 24px 80px;
+  }
+  h1.page-title { font-size: 20px; margin: 0 0 6px; }
+  p.page-sub { margin: 0 0 28px; color: var(--muted); font-size: 13px; line-height: 1.6; max-width: 720px; }
+  .grid { display: grid; grid-template-columns: repeat(3, minmax(280px, 1fr)); gap: 24px; }
+  @media (max-width: 1100px) { .grid { grid-template-columns: 1fr; max-width: 380px; } }
+
+  .candidate-label { margin-bottom: 10px; }
+  .candidate-label h2 { font-size: 14px; margin: 0 0 2px; }
+  .candidate-label span { font-size: 11.5px; color: var(--muted); display:block; line-height:1.5; }
+
+  .frame {
+    width: 100%; height: 620px; background: #fff; border-radius: 30px;
+    border: 8px solid var(--ink); overflow: hidden; position: relative;
+    box-shadow: 0 20px 40px -16px rgba(0,0,0,0.35);
+  }
+  .scroll { position:absolute; inset:0; overflow-y:auto; padding: 16px; }
+  .page-h { font-size: 16px; font-weight: 800; margin: 4px 0 14px; }
+
+  .card { background:#fff; border:2px solid var(--ink); border-radius:20px; padding:14px; margin-bottom:12px; }
+  .card h3 { margin:0 0 10px; font-size:13px; font-weight:800; }
+
+  .field { margin-bottom: 10px; }
+  .field label { display:block; font-size:9.5px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); margin-bottom:4px; }
+  .field .box { border:1.5px solid var(--line); border-radius:10px; padding:8px 10px; font-size:12.5px; font-weight:600; }
+  .field-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+
+  /* Candidate A: 아코디언 */
+  .acc-head {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:10px 12px; border:2px solid var(--ink); border-radius:14px; margin-bottom:8px; cursor:pointer;
+  }
+  .acc-head .t { font-size:12.5px; font-weight:800; }
+  .acc-head .s { font-size:10.5px; color:var(--muted); margin-top:2px; }
+  .acc-head .chev { font-size:11px; font-weight:800; }
+  .acc-body { padding: 4px 4px 14px; }
+  .acc-open .acc-head { background: var(--lime); }
+
+  /* Candidate B: 기본/고급 토글 */
+  .segmented { display:flex; border:2px solid var(--ink); border-radius:999px; padding:3px; margin-bottom:14px; }
+  .segmented .opt {
+    flex:1; text-align:center; padding:7px 0; font-size:12px; font-weight:800; border-radius:999px;
+  }
+  .segmented .opt.on { background: var(--ink); color:#fff; }
+
+  /* Candidate C: 드롭다운 요약 리스트 */
+  .row {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:11px 4px; border-bottom:1.5px solid var(--line);
+  }
+  .row:last-child { border-bottom:none; }
+  .row .k { font-size:12px; color:var(--muted); }
+  .row .v { display:flex; align-items:center; gap:6px; font-size:12.5px; font-weight:800; }
+  .row .v .chev { font-size:10px; color: var(--muted); }
+  .row.expanded { background: var(--pink); border-radius: 12px; padding: 11px 10px; margin: 2px 0; border-bottom: none; }
+  .row.expanded .box { margin-top: 8px; }
+
+  .pill-btn {
+    display:inline-flex; align-items:center; border:2px solid var(--ink); background:#fff;
+    border-radius:999px; padding:9px 18px; font-size:12.5px; font-weight:800; margin-top: 8px;
+  }
+</style>
+</head>
+<body>
+
+<h1 class="page-title">Trendloom — 옵션 간소화 후보 3종</h1>
+<p class="page-sub">
+  발주·가격 화면(필드 12개, 스크롤이 가장 긴 화면)을 예시로 세 가지 압축 방식을 비교합니다.
+  실제 라벨과 기본값을 그대로 썼어요. 마음에 드는 방식 골라주시면 발주·가격/스타일 보드/상품 태거 전체에 적용할게요.
+</p>
+
+<div class="grid" id="grid"></div>
+
+<script>
+const CANDIDATES = [
+  {
+    key: "a",
+    label: "A · 아코디언",
+    note: "기본·수요 가정은 펼쳐 두고, 시즌 운영·리스크는 접어서 필요할 때만 연다. 접힌 상태에서도 요약값이 보여서 훑어보기 쉬움.",
+    body: `
+      <h2 class="page-h">발주 · 가격</h2>
+      <div class="card">
+        <h3>기본 정보</h3>
+        <div class="field"><label>아이템</label><div class="box">오버핏 울 블렌드 자켓</div></div>
+        <div class="field-row">
+          <div class="field"><label>원가</label><div class="box">35,000원</div></div>
+          <div class="field"><label>기준 판매가</label><div class="box">99,000원</div></div>
+        </div>
+      </div>
+      <div class="card" style="border-color:var(--blue)">
+        <h3>수요 가정</h3>
+        <div class="field-row">
+          <div class="field"><label>주당 예상 판매량</label><div class="box">600장</div></div>
+          <div class="field"><label>가격탄력성</label><div class="box">-1.5</div></div>
+        </div>
+      </div>
+      <div class="acc-head"><div><div class="t">시즌 운영</div><div class="s">16주 · 할인 30% · 수수료 30%</div></div><div class="chev">▾</div></div>
+      <div class="acc-head"><div><div class="t">리스크 지표</div><div class="s">반품 12% · 회수 30% · 목표 80%</div></div><div class="chev">▾</div></div>
+      <div class="pill-btn">AI 실행 판단 받기</div>
+    `,
+  },
+  {
+    key: "b",
+    label: "B · 기본 / 고급 토글",
+    note: "결과를 좌우하는 5개 필드만 기본으로 보여주고, 나머지 7개는 '고급'을 눌러야 나타남. 가장 적은 탭으로 가장 짧은 화면.",
+    body: `
+      <h2 class="page-h">발주 · 가격</h2>
+      <div class="segmented"><div class="opt on">기본</div><div class="opt">고급</div></div>
+      <div class="card">
+        <div class="field"><label>아이템</label><div class="box">오버핏 울 블렌드 자켓</div></div>
+        <div class="field-row">
+          <div class="field"><label>원가</label><div class="box">35,000원</div></div>
+          <div class="field"><label>기준 판매가</label><div class="box">99,000원</div></div>
+        </div>
+      </div>
+      <div class="card" style="border-color:var(--blue)">
+        <div class="field-row">
+          <div class="field"><label>주당 예상 판매량</label><div class="box">600장</div></div>
+          <div class="field"><label>가격탄력성</label><div class="box">-1.5</div></div>
+        </div>
+      </div>
+      <p style="font-size:11px;color:var(--muted);text-align:center;margin:10px 0;">시즌 길이·할인율·반품률 등 7개는 '고급'에서</p>
+      <div class="pill-btn">AI 실행 판단 받기</div>
+    `,
+  },
+  {
+    key: "c",
+    label: "C · 드롭다운 요약 리스트",
+    note: "12개 전부 한 줄 요약(iOS 설정 스타일)으로 보여주고, 탭한 항목만 그 자리에서 펼쳐져 입력창이 나온다. 스크롤이 가장 짧음.",
+    body: `
+      <h2 class="page-h">발주 · 가격</h2>
+      <div class="card">
+        <div class="row"><span class="k">아이템</span><span class="v">오버핏 울 블렌드 자켓 <span class="chev">▾</span></span></div>
+        <div class="row expanded">
+          <div style="width:100%">
+            <div class="row" style="border:none;padding:0"><span class="k">원가</span><span class="v">35,000원 <span class="chev">▴</span></span></div>
+            <div class="box">35000</div>
+          </div>
+        </div>
+        <div class="row"><span class="k">기준 판매가</span><span class="v">99,000원 <span class="chev">▾</span></span></div>
+        <div class="row"><span class="k">주당 예상 판매량</span><span class="v">600장 <span class="chev">▾</span></span></div>
+        <div class="row"><span class="k">가격탄력성</span><span class="v">-1.5 <span class="chev">▾</span></span></div>
+        <div class="row"><span class="k">시즌 길이</span><span class="v">16주 <span class="chev">▾</span></span></div>
+        <div class="row"><span class="k">정상가 판매</span><span class="v">10주 <span class="chev">▾</span></span></div>
+        <div class="row"><span class="k">시즌 후반 할인율</span><span class="v">30% <span class="chev">▾</span></span></div>
+        <div class="row"><span class="k">채널 수수료</span><span class="v">30% <span class="chev">▾</span></span></div>
+        <div class="row"><span class="k">반품률</span><span class="v">12% <span class="chev">▾</span></span></div>
+        <div class="row"><span class="k">잔여재고 회수율</span><span class="v">30% <span class="chev">▾</span></span></div>
+        <div class="row"><span class="k">목표 판매율</span><span class="v">80% <span class="chev">▾</span></span></div>
+      </div>
+      <div class="pill-btn">AI 실행 판단 받기</div>
+    `,
+  },
+];
+
+const grid = document.getElementById("grid");
+CANDIDATES.forEach((c) => {
+  const wrap = document.createElement("div");
+  wrap.innerHTML = `
+    <div class="candidate-label"><h2>${c.label}</h2><span>${c.note}</span></div>
+    <div class="frame"><div class="scroll">${c.body}</div></div>
+  `;
+  grid.appendChild(wrap);
+});
+</script>
+</body>
+</html>

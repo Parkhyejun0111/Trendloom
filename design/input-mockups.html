@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Trendloom — 숫자 입력 방식 후보</title>
+<style>
+  :root {
+    --lime: #dff24c; --pink: #f6c7dc; --blue: #4fa3e3; --mint: #c9f1de;
+    --ink: #12120f; --paper: #14140f; --muted: #5c5c58; --line: rgba(18,18,15,0.14);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: #eef1e8;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    color: var(--paper); padding: 32px 24px 80px;
+  }
+  h1.page-title { font-size: 20px; margin: 0 0 6px; }
+  p.page-sub { margin: 0 0 28px; color: var(--muted); font-size: 13px; line-height: 1.6; max-width: 760px; }
+  .grid { display: grid; grid-template-columns: repeat(3, minmax(280px, 1fr)); gap: 24px; }
+  @media (max-width: 1100px) { .grid { grid-template-columns: 1fr; max-width: 380px; } }
+
+  .candidate-label { margin-bottom: 10px; }
+  .candidate-label h2 { font-size: 14px; margin: 0 0 2px; }
+  .candidate-label span { font-size: 11.5px; color: var(--muted); display:block; line-height:1.5; }
+
+  .frame {
+    width: 100%; height: 560px; background: #fff; border-radius: 30px;
+    border: 8px solid var(--ink); overflow: hidden; position: relative;
+    box-shadow: 0 20px 40px -16px rgba(0,0,0,0.35);
+  }
+  .scroll { position:absolute; inset:0; overflow-y:auto; padding: 18px; }
+  .page-h { font-size: 15px; font-weight: 800; margin: 2px 0 16px; }
+  .label { font-size: 11px; color: var(--muted); margin-bottom: 10px; text-transform:uppercase; letter-spacing:.04em; }
+
+  /* A: 가로 스크롤 눈금 다이얼 */
+  .dial-card { border:2px solid var(--ink); border-radius:22px; padding:18px; margin-bottom:20px; }
+  .dial-value { font-size: 34px; font-weight: 900; text-align:center; margin-bottom: 4px; }
+  .dial-unit { text-align:center; font-size:11px; color:var(--muted); margin-bottom:14px; }
+  .dial-track { position:relative; height:56px; overflow:hidden; }
+  .dial-ticks { position:absolute; left:50%; top:0; display:flex; align-items:flex-end; gap:16px; transform:translateX(-206px); }
+  .tick { width:2px; background:var(--line); }
+  .tick.major { height:28px; background:var(--ink); width:2.5px; }
+  .tick.minor { height:14px; }
+  .tick-num { position:absolute; top:32px; font-size:9.5px; color:var(--muted); transform:translateX(-50%); }
+  .dial-indicator { position:absolute; left:50%; top:0; width:3px; height:40px; background:var(--pink); transform:translateX(-50%); border-radius:2px; }
+  .dial-fade { position:absolute; inset:0; pointer-events:none;
+    background:linear-gradient(90deg,#fff, transparent 20%, transparent 80%, #fff); }
+
+  /* B: 빅 스테퍼 */
+  .stepper-card { border:2px solid var(--ink); border-radius:22px; padding:22px; margin-bottom:20px; text-align:center; }
+  .stepper-row { display:flex; align-items:center; justify-content:center; gap:18px; }
+  .step-btn {
+    width:52px; height:52px; border-radius:999px; border:2.5px solid var(--ink); background:#fff;
+    font-size:24px; font-weight:800; display:flex; align-items:center; justify-content:center;
+  }
+  .step-btn.filled { background: var(--lime); }
+  .stepper-value { font-size: 38px; font-weight: 900; min-width:140px; }
+  .stepper-unit { font-size:11px; color:var(--muted); margin-top:6px; }
+  .quick-row { display:flex; gap:8px; justify-content:center; margin-top:16px; flex-wrap:wrap; }
+  .quick-chip { border:2px solid var(--ink); border-radius:999px; padding:6px 14px; font-size:11.5px; font-weight:700; }
+  .quick-chip.on { background: var(--ink); color:#fff; }
+
+  /* C: 가로 스크롤 프리셋 카드 (칩 대신 큼직한 버튼을 옆으로 스와이프) */
+  .swipe-row { display:flex; gap:10px; overflow-x:auto; padding: 4px 0 10px; scroll-snap-type:x mandatory; }
+  .opt-card {
+    scroll-snap-align:start; flex-shrink:0; width:104px; height:104px; border:2.5px solid var(--ink);
+    border-radius:20px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px;
+  }
+  .opt-card .n { font-size:22px; font-weight:900; }
+  .opt-card .u { font-size:9.5px; color:var(--muted); }
+  .opt-card.on { background: var(--blue); }
+
+  .row-compact { display:flex; align-items:center; justify-content:space-between; padding:11px 4px; border-bottom:1.5px solid var(--line); font-size:12.5px; }
+  .row-compact .v { font-weight:800; }
+</style>
+</head>
+<body>
+
+<h1 class="page-title">Trendloom — 숫자 입력 방식 후보 3종</h1>
+<p class="page-sub">
+  글로 쓰는 입력창 대신 더 "만지는" 느낌의 방식들이에요. 실제로는 발주·가격 화면의 드롭다운 요약 리스트(지난번 C안)
+  안에서, 펼쳤을 때 나오는 입력 UI만 이걸로 바꾸는 구조입니다 — 리스트 자체는 그대로 유지.
+</p>
+
+<div class="grid" id="grid"></div>
+
+<script>
+const CANDIDATES = [
+  {
+    key: "a",
+    label: "A · 가로 스크롤 눈금 다이얼",
+    note: "자를 옆으로 미는 느낌. 숫자가 눈금을 따라 좌우로 스크롤되고, 중앙 선에 걸리는 값이 선택됨. 큰 범위(원가·판매량)에 잘 맞음.",
+    body: `
+      <div class="page-h">발주 · 가격 › 원가</div>
+      <div class="dial-card">
+        <div class="dial-value">35,000</div>
+        <div class="dial-unit">원 · 1,000원 단위로 좌우 스크롤</div>
+        <div class="dial-track">
+          <div class="dial-ticks">
+            ${Array.from({length:23},(_,i)=>{
+              const major = i%5===0;
+              return `<div class="tick ${major?'major':'minor'}">${major?`<span class="tick-num">${28+i}k</span>`:''}</div>`;
+            }).join('')}
+          </div>
+          <div class="dial-indicator"></div>
+          <div class="dial-fade"></div>
+        </div>
+      </div>
+      <div class="row-compact"><span>기준 판매가</span><span class="v">99,000원</span></div>
+      <div class="row-compact"><span>주당 예상 판매량</span><span class="v">600장</span></div>
+      <div class="row-compact"><span>가격탄력성</span><span class="v">-1.5</span></div>
+    `,
+  },
+  {
+    key: "b",
+    label: "B · 빅 스테퍼 + 프리셋 칩",
+    note: "거대한 -/+ 버튼으로 값을 조정. 자주 쓰는 값은 칩으로 한 번에 선택. 타이핑이 아예 필요 없음, % 계열 필드에 잘 맞음.",
+    body: `
+      <div class="page-h">발주 · 가격 › 시즌 후반 할인율</div>
+      <div class="stepper-card">
+        <div class="stepper-row">
+          <div class="step-btn">−</div>
+          <div>
+            <div class="stepper-value">30%</div>
+            <div class="stepper-unit">5%씩 조정</div>
+          </div>
+          <div class="step-btn filled">+</div>
+        </div>
+        <div class="quick-row">
+          <div class="quick-chip">20%</div>
+          <div class="quick-chip on">30%</div>
+          <div class="quick-chip">40%</div>
+          <div class="quick-chip">50%</div>
+        </div>
+      </div>
+      <div class="row-compact"><span>채널 수수료</span><span class="v">30%</span></div>
+      <div class="row-compact"><span>반품률</span><span class="v">12%</span></div>
+      <div class="row-compact"><span>잔여재고 회수율</span><span class="v">30%</span></div>
+    `,
+  },
+  {
+    key: "c",
+    label: "C · 가로 스와이프 프리셋 카드",
+    note: "값 후보들을 큼직한 카드로 두고 옆으로 스와이프해서 고른다. 정해진 옵션 몇 개 중 고르면 충분한 필드(시즌 길이 등)에 잘 맞음.",
+    body: `
+      <div class="page-h">발주 · 가격 › 시즌 길이</div>
+      <div class="swipe-row">
+        <div class="opt-card"><div class="n">8</div><div class="u">주</div></div>
+        <div class="opt-card"><div class="n">12</div><div class="u">주</div></div>
+        <div class="opt-card on"><div class="n">16</div><div class="u">주</div></div>
+        <div class="opt-card"><div class="n">20</div><div class="u">주</div></div>
+        <div class="opt-card"><div class="n">24</div><div class="u">주</div></div>
+      </div>
+      <p style="font-size:11px;color:var(--muted);margin:2px 0 18px;">← 옆으로 밀어서 다른 값도 볼 수 있어요</p>
+      <div class="row-compact"><span>정상가 판매</span><span class="v">10주</span></div>
+      <div class="row-compact"><span>목표 판매율</span><span class="v">80%</span></div>
+    `,
+  },
+];
+
+const grid = document.getElementById("grid");
+CANDIDATES.forEach((c) => {
+  const wrap = document.createElement("div");
+  wrap.innerHTML = `
+    <div class="candidate-label"><h2>${c.label}</h2><span>${c.note}</span></div>
+    <div class="frame"><div class="scroll">${c.body}</div></div>
+  `;
+  grid.appendChild(wrap);
+});
+</script>
+</body>
+</html>

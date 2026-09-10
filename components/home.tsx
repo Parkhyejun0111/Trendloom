@@ -93,12 +93,7 @@ export function Home({ onNavigate }: { onNavigate: (id: ToolId) => void }) {
   }
 
   return (
-    <div className="hero-gradient fade-up -mx-5 px-5 pb-8 pt-1">
-      <h2 className="text-2xl font-extrabold tracking-tight text-paper">무엇부터 시작할까요?</h2>
-      <p className="mb-8 text-sm leading-relaxed text-muted">
-        카드를 사선으로 밀어서 다음 걸 확인해보세요.
-      </p>
-
+    <div className="hero-gradient fade-up -mx-5 flex min-h-[560px] flex-col justify-center px-5 py-10">
       <div className="relative mx-auto" style={{ width: "82%", height: 350 }}>
         {order.map((featureIndex, depth) => {
           const f = FEATURES[featureIndex];
