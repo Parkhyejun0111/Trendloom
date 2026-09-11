@@ -247,7 +247,7 @@ export function StyleBoard() {
       {/* ── AI 무드 브리프 — 스타일 보드 만들기 버튼 바로 아래, 사진 위에 노트처럼 뜬다.
           이 구역만 네이비 배경으로 구분해서 "여기부터는 AI가 정리한 결과"임을 확실히 보여준다 ── */}
       {(thinking || brief) && (
-        <div className="fade-up glass-bead-soft-static space-y-6 rounded-[26px] bg-trend-navy p-5">
+        <div className="fade-up space-y-6 rounded-[26px] bg-trend-navy p-5">
           {!!pinnedImages.length && (
             <div className="flex justify-center pb-1 pt-2">
               <div className="flex pl-6">
@@ -260,7 +260,7 @@ export function StyleBoard() {
                   return (
                     <div
                       key={id}
-                      className="-ml-6 size-16 shrink-0 overflow-hidden rounded-xl border-2 border-white shadow-[0_10px_20px_-8px_rgba(0,0,0,0.5)]"
+                      className="-ml-6 size-16 shrink-0 overflow-hidden rounded-xl shadow-[0_10px_20px_-8px_rgba(0,0,0,0.5)]"
                       style={{ transform: `rotate(${rot}deg) translateY(${ty}px)`, zIndex: i }}
                     >
                       {im.placeholder || !im.thumbnail ? (
@@ -283,7 +283,7 @@ export function StyleBoard() {
                 })}
                 {pinnedImages.length > 7 && (
                   <div
-                    className="-ml-6 flex size-16 shrink-0 items-center justify-center rounded-xl border-2 border-white bg-trend-navy-deep text-xs font-bold text-white shadow-[0_10px_20px_-8px_rgba(0,0,0,0.5)]"
+                    className="-ml-6 flex size-16 shrink-0 items-center justify-center rounded-xl bg-trend-navy-deep text-xs font-bold text-white shadow-[0_10px_20px_-8px_rgba(0,0,0,0.5)]"
                     style={{ zIndex: 7 }}
                   >
                     +{pinnedImages.length - 7}
