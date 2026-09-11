@@ -344,6 +344,42 @@ body {
     0 28px 48px -18px rgba(0, 0, 0, 0.4);
 }
 
+/* 위와 같은 유리알 입체감이지만, 검정 대신 네이비 톤으로 그림자를 줘서
+   연핑크처럼 옅은 색 위에서도 가장자리가 회색빛으로 탁해지지 않는다.
+   (핑크 활성 탭/버튼/카드 전용) */
+.glass-bead-pink {
+  background-image:
+    radial-gradient(140% 170% at 20% -30%, rgba(255, 255, 255, 0.9), transparent 50%),
+    radial-gradient(90% 60% at 100% 115%, rgba(2, 7, 93, 0.12), transparent 60%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.3) 0%, rgba(2, 7, 93, 0.06) 100%);
+  box-shadow:
+    inset 0 2px 2px rgba(255, 255, 255, 0.95),
+    inset 0 -10px 16px -12px rgba(2, 7, 93, 0.2),
+    inset 1px 0 1px rgba(255, 255, 255, 0.6),
+    0 2px 3px rgba(2, 7, 93, 0.08),
+    0 16px 30px -16px rgba(2, 7, 93, 0.28);
+  transition:
+    filter 0.15s ease,
+    transform 0.15s ease;
+}
+.glass-bead-pink:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.02);
+}
+
+.glass-bead-pink-static {
+  background-image:
+    radial-gradient(140% 170% at 20% -30%, rgba(255, 255, 255, 0.9), transparent 50%),
+    radial-gradient(90% 60% at 100% 115%, rgba(2, 7, 93, 0.12), transparent 60%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.3) 0%, rgba(2, 7, 93, 0.06) 100%);
+  box-shadow:
+    inset 0 2px 2px rgba(255, 255, 255, 0.95),
+    inset 0 -10px 16px -12px rgba(2, 7, 93, 0.2),
+    inset 1px 0 1px rgba(255, 255, 255, 0.6),
+    0 2px 3px rgba(2, 7, 93, 0.08),
+    0 16px 30px -16px rgba(2, 7, 93, 0.28);
+}
+
 /* ── 애니메이션 ──────────────────────────────────────── */
 
 @keyframes fade-up {

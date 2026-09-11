@@ -200,7 +200,7 @@ export function StyleBoard() {
                     onClick={() => setMoodInput(m.suffix)}
                     className={`rounded-full px-3 py-1.5 text-xs font-medium transition ${
                       active
-                        ? "glass-bead-soft-static bg-trend-pink text-trend-navy"
+                        ? "glass-bead-pink-static bg-trend-pink text-trend-navy"
                         : "border border-trend-pink/50 bg-trend-pink/15 text-trend-navy/55 hover:bg-trend-pink/25"
                     }`}
                   >
@@ -370,7 +370,7 @@ export function StyleBoard() {
           </Card>
 
           {brief?.mdNote && (
-            <Card className="trend-pink glass-bead-soft-static">
+            <Card className="trend-pink glass-bead-pink-static">
               <h3 className="text-sm font-extrabold tracking-tight text-trend-navy">MD 실행 포인트</h3>
               <ul className="mt-3 space-y-2.5">
                 {splitSentences(brief.mdNote).map((s, i) => (

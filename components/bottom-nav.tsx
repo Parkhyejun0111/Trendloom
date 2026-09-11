@@ -36,7 +36,7 @@ export function BottomNav({
             aria-current={isActive ? "page" : undefined}
             className={`flex flex-col items-center gap-1 rounded-3xl px-3 py-2 text-[10.5px] font-medium transition ${
               isActive
-                ? "glass-bead-soft bg-trend-pink text-trend-navy"
+                ? "glass-bead-pink bg-trend-pink text-trend-navy"
                 : "text-ink-black/50 hover:text-ink-black"
             }`}
           >

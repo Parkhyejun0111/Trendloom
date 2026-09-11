@@ -49,7 +49,7 @@ export function HeroSignalCard({
     <button
       type="button"
       onClick={onClick}
-      className="trend-pink glass-bead-soft-static flex w-full items-center gap-2.5 rounded-full py-3 pl-4 pr-5 text-left transition hover:brightness-[0.97]"
+      className="trend-pink glass-bead-pink-static flex w-full items-center gap-2.5 rounded-full py-3 pl-4 pr-5 text-left transition hover:brightness-[0.97]"
     >
       <span className="pulse-dot size-2 shrink-0 rounded-full bg-trend-navy" />
       <span className="shrink-0 text-[10px] font-extrabold tracking-widest text-trend-navy/55">
