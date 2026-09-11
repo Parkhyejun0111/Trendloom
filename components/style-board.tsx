@@ -150,7 +150,7 @@ export function StyleBoard() {
   return (
     <div className="space-y-6">
       {/* ── 입력 ───────────────────────────────────────────── */}
-      <Card className="card-glass glass-bead-soft-static">
+      <Card>
         <div className="grid gap-5 @lg:grid-cols-[1.3fr_1fr]">
           <div className="space-y-4">
             <Field label="어떤 스타일을 찾으세요?">
@@ -220,7 +220,7 @@ export function StyleBoard() {
         </div>
 
         <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-line pt-4">
-          <PrimaryButton onClick={buildBoard} disabled={loading || !keywords.length}>
+          <PrimaryButton className="border-0!" onClick={buildBoard} disabled={loading || !keywords.length}>
             {loading ? "레퍼런스 수집 중…" : "스타일 보드 만들기"}
           </PrimaryButton>
           {board && (
