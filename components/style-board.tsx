@@ -5,8 +5,7 @@ import Image from "next/image";
 import { useObject } from "@ai-sdk/react";
 import { STYLE_MOODS, type StyleImage } from "@/lib/naver";
 import { styleBoardSchema } from "@/lib/schemas";
-import { CatSays } from "./brand";
-import { Card, Field, Pill, PrimaryButton, Skeleton, Toggle } from "./ui";
+import { Card, Field, Pill, PrimaryButton, Skeleton } from "./ui";
 
 type BoardResult = {
   source: "naver" | "demo";
@@ -151,7 +150,7 @@ export function StyleBoard() {
   return (
     <div className="space-y-6">
       {/* ── 입력 ───────────────────────────────────────────── */}
-      <Card className="card-glass">
+      <Card className="card-glass glass-bead-soft-static">
         <div className="grid gap-5 @lg:grid-cols-[1.3fr_1fr]">
           <div className="space-y-4">
             <Field label="어떤 스타일을 찾으세요?">
@@ -191,11 +190,24 @@ export function StyleBoard() {
 
           <Field label="무드">
             <div className="flex flex-wrap gap-2">
-              {STYLE_MOODS.map((m) => (
-                <Toggle key={m.id} active={moodInput === m.suffix} onClick={() => setMoodInput(m.suffix)}>
-                  {m.label}
-                </Toggle>
-              ))}
+              {STYLE_MOODS.map((m) => {
+                const active = moodInput === m.suffix;
+                return (
+                  <button
+                    key={m.id}
+                    type="button"
+                    aria-pressed={active}
+                    onClick={() => setMoodInput(m.suffix)}
+                    className={`rounded-full px-3 py-1.5 text-xs font-medium transition ${
+                      active
+                        ? "glass-bead-soft-static bg-trend-pink text-trend-navy"
+                        : "border border-trend-pink/50 bg-trend-pink/15 text-trend-navy/55 hover:bg-trend-pink/25"
+                    }`}
+                  >
+                    {m.label}
+                  </button>
+                );
+              })}
             </div>
             <input
               value={moodInput}
@@ -224,9 +236,9 @@ export function StyleBoard() {
                   : `보드 전체(${visible.length}장)로 무드 브리프`}
             </button>
           )}
-          <span className="text-xs text-muted">
-            {pinnedImages.length ? "핀한 컷만 분석에 넘어갑니다" : "사진을 누르면 핀이 찍혀요 — 원하는 컷만 골라낼 수 있어요"}
-          </span>
+          {!!pinnedImages.length && (
+            <span className="text-xs text-muted">핀한 컷만 분석에 넘어갑니다</span>
+          )}
         </div>
 
         {err && (
@@ -548,19 +560,6 @@ export function StyleBoard() {
         </div>
       )}
 
-      {board && !loading && !visible.length && (
-        <CatSays>
-          레퍼런스를 한 장도 못 가져왔어요. 키워드를 더 일반적인 말로 바꾸거나 무드를
-          비워두고 다시 시도해 보세요.
-        </CatSays>
-      )}
-
-      {!board && !loading && (
-        <CatSays>
-          키워드와 무드를 고르고 보드를 만들어 보세요. 모인 컷 중 마음에 드는 것만
-          핀하면, 그 조합에서 시즌 팔레트와 실루엣을 뽑아 드릴게요.
-        </CatSays>
-      )}
     </div>
   );
 }

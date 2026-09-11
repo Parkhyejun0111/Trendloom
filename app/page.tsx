@@ -16,8 +16,7 @@ const TOOL_META: Record<Exclude<ToolId, "trend">, { label: string; title?: strin
   },
   plan: {
     label: "발주 · 가격",
-    title: "발주 수량과 판매가를 정합니다",
-    hint: "입력을 바꾸면 16개 조합이 즉시 다시 계산됩니다 · 숫자는 전부 산식으로 나옵니다",
+    hint: "숫자는 전부 산식으로 나옵니다",
   },
   tagger: {
     label: "상품 태거",
