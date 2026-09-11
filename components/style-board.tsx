@@ -154,7 +154,7 @@ export function StyleBoard() {
         <div className="grid gap-5 @lg:grid-cols-[1.3fr_1fr]">
           <div className="space-y-4">
             <Field label="어떤 스타일을 찾으세요?">
-              <div className="flex flex-wrap items-center gap-2 rounded-lg border border-line-2 bg-ink p-2 backdrop-blur-sm">
+              <div className="flex flex-wrap items-center gap-2 rounded-lg border border-line-2 bg-ink/45 p-2 backdrop-blur-sm">
                 {keywords.map((k) => (
                   <span
                     key={k}
@@ -213,7 +213,7 @@ export function StyleBoard() {
               value={moodInput}
               onChange={(e) => setMoodInput(e.target.value)}
               placeholder="직접 입력도 가능 (예: 골프웨어 화보)"
-              className="mt-2 w-full rounded-lg border border-line-2 bg-ink px-3 py-2 text-sm outline-none placeholder:text-muted focus:border-accent/50"
+              className="mt-2 w-full rounded-lg border border-line-2 bg-ink/45 px-3 py-2 text-sm outline-none placeholder:text-muted focus:border-accent/50"
             />
             <p className="mt-2 text-xs leading-relaxed text-muted">고르거나 직접 적으면 검색어 뒤에 붙어 결과가 그 느낌으로 좁혀져요</p>
           </Field>
@@ -224,17 +224,13 @@ export function StyleBoard() {
             {loading ? "레퍼런스 수집 중…" : "스타일 보드 만들기"}
           </PrimaryButton>
           {board && (
-            <button
-              onClick={readBoard}
-              disabled={thinking || !visible.length}
-              className="rounded-xl border border-accent/50 px-4 py-2.5 text-sm font-semibold text-accent transition hover:bg-accent/10 disabled:cursor-not-allowed disabled:opacity-40"
-            >
+            <PrimaryButton className="border-0!" onClick={readBoard} disabled={thinking || !visible.length}>
               {thinking
                 ? "무드 읽는 중…"
                 : pinnedImages.length
                   ? `핀 ${pinnedImages.length}장으로 무드 브리프`
                   : `보드 전체(${visible.length}장)로 무드 브리프`}
-            </button>
+            </PrimaryButton>
           )}
           {!!pinnedImages.length && (
             <span className="text-xs text-muted">핀한 컷만 분석에 넘어갑니다</span>
@@ -251,7 +247,52 @@ export function StyleBoard() {
       {/* ── AI 무드 브리프 — 스타일 보드 만들기 버튼 바로 아래, 사진 위에 노트처럼 뜬다.
           이 구역만 네이비 배경으로 구분해서 "여기부터는 AI가 정리한 결과"임을 확실히 보여준다 ── */}
       {(thinking || brief) && (
-        <div className="fade-up space-y-6 rounded-[26px] bg-trend-navy p-5">
+        <div className="fade-up glass-bead-soft-static space-y-6 rounded-[26px] bg-trend-navy p-5">
+          {!!pinnedImages.length && (
+            <div className="flex justify-center pb-1 pt-2">
+              <div className="flex pl-6">
+                {pinnedImages.slice(0, 7).map((im, i) => {
+                  const shown = Math.min(pinnedImages.length, 7);
+                  const mid = (shown - 1) / 2;
+                  const rot = (i - mid) * 7;
+                  const ty = Math.abs(i - mid) * 7;
+                  const id = idOf(im, i);
+                  return (
+                    <div
+                      key={id}
+                      className="-ml-6 size-16 shrink-0 overflow-hidden rounded-xl border-2 border-white shadow-[0_10px_20px_-8px_rgba(0,0,0,0.5)]"
+                      style={{ transform: `rotate(${rot}deg) translateY(${ty}px)`, zIndex: i }}
+                    >
+                      {im.placeholder || !im.thumbnail ? (
+                        <div className="flex size-full items-center justify-center bg-ink-3 text-[8px] text-muted">
+                          {im.query}
+                        </div>
+                      ) : (
+                        <Image
+                          src={im.thumbnail}
+                          alt={im.title}
+                          width={64}
+                          height={64}
+                          unoptimized
+                          referrerPolicy="no-referrer"
+                          className="size-full object-cover"
+                        />
+                      )}
+                    </div>
+                  );
+                })}
+                {pinnedImages.length > 7 && (
+                  <div
+                    className="-ml-6 flex size-16 shrink-0 items-center justify-center rounded-xl border-2 border-white bg-trend-navy-deep text-xs font-bold text-white shadow-[0_10px_20px_-8px_rgba(0,0,0,0.5)]"
+                    style={{ zIndex: 7 }}
+                  >
+                    +{pinnedImages.length - 7}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           <div className="flex items-center gap-3">
             <h2 className="text-lg font-semibold tracking-tight text-white">시즌 무드 브리프</h2>
             {thinking && <Pill tone="accent">생성 중…</Pill>}
@@ -260,7 +301,7 @@ export function StyleBoard() {
 
           <Card>
             {brief?.headline ? (
-              <p className="text-xl font-medium leading-snug tracking-tight">
+              <p className="text-xl font-extrabold leading-snug tracking-tight text-paper">
                 {brief.headline}
               </p>
             ) : (
