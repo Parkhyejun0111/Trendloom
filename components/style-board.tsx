@@ -41,6 +41,26 @@ function splitSentences(text: string) {
     .filter(Boolean);
 }
 
+/** 흰 카드 제목에 연핑크 색연필 밑줄 포인트를 준다 (Card 의 title prop 대신 직접 렌더링) */
+function AccentTitle({ children, hint }: { children: string; hint?: string }) {
+  return (
+    <div className="mb-4">
+      <h3 className="relative inline-block pb-1.5 text-sm font-semibold tracking-tight text-paper">
+        {children}
+        <span
+          aria-hidden="true"
+          className="absolute inset-x-0 bottom-0 h-[5px] -rotate-1 rounded-full"
+          style={{
+            background:
+              "linear-gradient(90deg, transparent 0%, var(--color-trend-pink) 14%, var(--color-trend-pink) 86%, transparent 100%)",
+          }}
+        />
+      </h3>
+      {hint && <p className="mt-1 text-xs leading-relaxed text-muted">{hint}</p>}
+    </div>
+  );
+}
+
 export function StyleBoard() {
   const [input, setInput] = useState("");
   const [keywords, setKeywords] = useState<string[]>(["오버핏 코트", "와이드 데님"]);
@@ -243,7 +263,8 @@ export function StyleBoard() {
             </div>
           </Card>
 
-          <Card title="시즌 컬러 팔레트" hint="탭하면 헥스가 복사됩니다 · 원단 발주 시 참고">
+          <Card>
+            <AccentTitle hint="탭하면 헥스가 복사됩니다 · 원단 발주 시 참고">시즌 컬러 팔레트</AccentTitle>
             {brief?.palette?.length ? (
               <div className="grid grid-cols-3 gap-3">
                 {brief.palette.map((c, i) => (
@@ -280,13 +301,16 @@ export function StyleBoard() {
           </Card>
 
           <div className="grid gap-4 @lg:grid-cols-3">
-            <Card className="card-glass" title="핵심 실루엣">
+            <Card>
+              <AccentTitle>핵심 실루엣</AccentTitle>
               <TagList items={brief?.silhouettes} />
             </Card>
-            <Card className="card-glass" title="핵심 소재">
+            <Card>
+              <AccentTitle>핵심 소재</AccentTitle>
               <TagList items={brief?.materials} />
             </Card>
-            <Card className="card-glass" title="디테일 포인트">
+            <Card>
+              <AccentTitle>디테일 포인트</AccentTitle>
               <TagList items={brief?.details} />
             </Card>
           </div>
