@@ -5,7 +5,7 @@ import type { TrendSnapshot } from "@/lib/trend-db";
 import { TrendDetail } from "./trend-detail";
 import { TrendRadar } from "./trend-radar";
 import { TrendTable } from "./trend-table";
-import { HeroSignalCard, SourceBadge } from "./signal-card";
+import { HeroSignalCard } from "./signal-card";
 import { Card, Skeleton } from "./ui";
 
 const RANKING_PREVIEW = 6;
@@ -51,11 +51,6 @@ export function Trend() {
   const updatedDate = data
     ? new Date(data.updatedAt).toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric" })
     : "";
-  const anyDemo =
-    data &&
-    (data.sourceStatus.naverSearch !== "live" ||
-      data.sourceStatus.naverShopping !== "live" ||
-      data.sourceStatus.pinterest !== "live");
 
   return (
     <div className="fade-up space-y-5">
@@ -75,16 +70,6 @@ export function Trend() {
           </button>
         </div>
         <p className="mt-2 text-[10.5px] text-white/45">NAVER + PINTEREST · LAST UPDATED {updatedTime}</p>
-        <div className="mt-3 flex flex-wrap gap-1.5">
-          <SourceBadge label="NAVER SEARCH" status={data?.sourceStatus.naverSearch} />
-          <SourceBadge label="NAVER SHOPPING" status={data?.sourceStatus.naverShopping} />
-          <SourceBadge label="PINTEREST" status={data?.sourceStatus.pinterest} />
-        </div>
-        {anyDemo && (
-          <p className="mt-2 text-[10px] leading-relaxed text-white/35">
-            DEMO/UNAVAILABLE 은 오류가 아니라, 실 API 키 연결 전 상태를 그대로 보여주는 표시입니다.
-          </p>
-        )}
       </div>
 
       {loading && (

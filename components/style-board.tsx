@@ -16,12 +16,6 @@ type BoardResult = {
   images: StyleImage[];
 };
 
-const PRESETS = [
-  { label: "미니멀 아우터", kws: ["오버핏 코트", "숏 패딩"] },
-  { label: "데님 무드", kws: ["와이드 데님", "데님 자켓"] },
-  { label: "레이어드 니트", kws: ["케이블 니트", "니트 베스트"] },
-];
-
 /** 보드 카드 하나를 가리키는 안정적인 키 (핀 선택 상태 유지용) */
 const idOf = (im: StyleImage, i: number) => im.thumbnail || `${im.query}-${i}`;
 
@@ -131,7 +125,7 @@ export function StyleBoard() {
       <Card className="card-glass">
         <div className="grid gap-5 @lg:grid-cols-[1.3fr_1fr]">
           <div className="space-y-4">
-            <Field label="키워드">
+            <Field label="어떤 스타일을 찾으세요?">
               <div className="flex flex-wrap items-center gap-2 rounded-lg border border-line-2 bg-ink p-2 backdrop-blur-sm">
                 {keywords.map((k) => (
                   <span
@@ -158,30 +152,15 @@ export function StyleBoard() {
                     }
                     if (e.key === "Backspace" && !input) setKeywords(keywords.slice(0, -1));
                   }}
-                  placeholder={keywords.length >= 4 ? "최대 4개" : "키워드 입력 후 Enter"}
+                  placeholder={keywords.length >= 4 ? "최대 4개" : "예: 오버핏 코트 (Enter로 추가)"}
                   disabled={keywords.length >= 4}
                   className="min-w-[140px] flex-1 bg-transparent px-2 py-1 text-sm outline-none placeholder:text-muted"
                 />
               </div>
             </Field>
-
-            <div className="flex flex-wrap gap-2">
-              <span className="self-center text-[11px] uppercase tracking-wider text-muted">
-                프리셋
-              </span>
-              {PRESETS.map((p) => (
-                <button
-                  key={p.label}
-                  onClick={() => setKeywords(p.kws)}
-                  className="rounded-md border border-line-2 px-2.5 py-1 text-xs text-paper/70 transition hover:border-accent hover:text-accent"
-                >
-                  {p.label}
-                </button>
-              ))}
-            </div>
           </div>
 
-          <Field label="무드 프리셋">
+          <Field label="무드">
             <div className="flex flex-wrap gap-2">
               {STYLE_MOODS.map((m) => (
                 <Toggle key={m.id} active={mood === m.id} onClick={() => setMood(m.id)}>
@@ -189,21 +168,7 @@ export function StyleBoard() {
                 </Toggle>
               ))}
             </div>
-            <p className="mt-2 text-xs leading-relaxed text-muted">
-              선택한 무드는 검색어 뒤에 붙어 레퍼런스 성격을 바꿉니다.
-              {STYLE_MOODS.find((m) => m.id === mood)?.suffix ? (
-                <>
-                  {" "}
-                  현재:{" "}
-                  <span className="text-paper/70">
-                    {keywords[0] ?? "키워드"}{" "}
-                    {STYLE_MOODS.find((m) => m.id === mood)?.suffix}
-                  </span>
-                </>
-              ) : (
-                " 현재: 입력한 키워드 그대로 검색합니다."
-              )}
-            </p>
+            <p className="mt-2 text-xs leading-relaxed text-muted">코디 느낌을 고르면 검색 결과가 그 느낌으로 좁혀져요</p>
           </Field>
         </div>
 

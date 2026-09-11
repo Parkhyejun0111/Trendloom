@@ -400,6 +400,23 @@ body {
   animation: draw 1s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/* 티커 바의 "라이브" 점 — 은은하게 링이 번지듯 퍼지는 펄스 */
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgba(2, 7, 93, 0.35);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(2, 7, 93, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(2, 7, 93, 0);
+  }
+}
+
+.pulse-dot {
+  animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
 /* 바 성장 */
 @keyframes grow-x {
   from {
@@ -479,7 +496,8 @@ body {
   .bob,
   .shimmer::after,
   .splash-rise,
-  .splash-bar {
+  .splash-bar,
+  .pulse-dot {
     animation: none !important;
   }
   .draw {

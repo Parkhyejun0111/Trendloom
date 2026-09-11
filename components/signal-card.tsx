@@ -1,8 +1,7 @@
 "use client";
 
 import type { SourceStatus } from "@/lib/naver-trend";
-import { LIFECYCLE_LABEL_KR, type LifecycleStage } from "@/lib/trend-engine";
-import { Pill } from "./ui";
+import type { LifecycleStage } from "@/lib/trend-engine";
 
 export function SourceBadge({ label, status }: { label: string; status?: SourceStatus }) {
   const s = status ?? "unavailable";
@@ -31,7 +30,9 @@ export function SignalRow({ label, value }: { label: string; value: number | nul
   );
 }
 
-/** 대시보드용 한 줄 요약 카드 — 상세 신호 breakdown은 Detail 화면 몫이라 여기선 이름/라이프사이클/모멘텀만 */
+const DOWN_STAGES: LifecycleStage[] = ["DECLINING", "SATURATED"];
+
+/** 대시보드용 "라이브 티커 바" — 연핑크 알약형 바 하나로 오늘의 시그널을 압축해서 보여준다 */
 export function HeroSignalCard({
   name,
   lifecycle,
@@ -43,23 +44,24 @@ export function HeroSignalCard({
   momentum: number;
   onClick?: () => void;
 }) {
+  const up = !DOWN_STAGES.includes(lifecycle);
   return (
     <button
       type="button"
       onClick={onClick}
-      className="trend-signal card-glass flex w-full items-center justify-between gap-3 rounded-2xl border p-4 text-left transition hover:brightness-[0.99]"
+      className="trend-pink glass-bead-soft-static flex w-full items-center gap-2.5 rounded-full py-3 pl-4 pr-5 text-left transition hover:brightness-[0.97]"
     >
-      <div className="min-w-0">
-        <p className="text-[10px] font-bold tracking-widest text-trend-navy/55">TODAY&apos;S SIGNAL</p>
-        <p className="mt-1 truncate text-lg font-extrabold tracking-tight text-trend-navy">{name}</p>
-        <span className="mt-1 inline-block">
-          <Pill>{LIFECYCLE_LABEL_KR[lifecycle]}</Pill>
-        </span>
-      </div>
-      <div className="shrink-0 text-center">
-        <p className="text-4xl font-extrabold tracking-tight text-trend-navy">{Math.round(momentum)}</p>
-        <p className="mt-0.5 text-[9.5px] font-bold tracking-widest text-trend-navy/55">MOMENTUM</p>
-      </div>
+      <span className="pulse-dot size-2 shrink-0 rounded-full bg-trend-navy" />
+      <span className="shrink-0 text-[10px] font-extrabold tracking-widest text-trend-navy/55">
+        TODAY&apos;S SIGNAL
+      </span>
+      <span className="min-w-0 flex-1 truncate text-[15px] font-extrabold tracking-tight text-trend-navy">
+        {name}
+      </span>
+      <span className={`text-xs font-bold ${up ? "text-trend-positive" : "text-trend-negative"}`}>
+        {up ? "▲" : "▼"}
+      </span>
+      <span className="text-lg font-extrabold tabular-nums text-trend-navy">{Math.round(momentum)}</span>
     </button>
   );
 }
