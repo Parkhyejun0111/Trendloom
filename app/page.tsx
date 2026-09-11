@@ -9,11 +9,10 @@ import { Trend } from "@/components/trend-dashboard";
 import { BottomNav, type ToolId } from "@/components/bottom-nav";
 import { Logo } from "@/components/brand";
 
-const TOOL_META: Record<Exclude<ToolId, "trend">, { label: string; title: string; hint: string }> = {
+const TOOL_META: Record<Exclude<ToolId, "trend">, { label: string; title?: string; hint: string }> = {
   board: {
     label: "스타일 보드",
-    title: "어떤 무드를 찾고 계세요?",
-    hint: "키워드 최대 4개 · 네이버 이미지 검색으로 레퍼런스를 모으고, 마음에 드는 컷을 핀하면 AI가 무드 브리프로 정리합니다",
+    hint: "네이버 이미지 검색으로 레퍼런스를 모으고, AI 무드 브리핑",
   },
   plan: {
     label: "발주 · 가격",
@@ -62,9 +61,11 @@ export default function Page() {
             <p className={`text-sm font-extrabold tracking-tight ${heroDark ? "text-white" : "text-paper"}`}>
               {TOOL_META[screen].label}
             </p>
-            <h2 className={`mt-2 text-base font-extrabold tracking-tight ${heroDark ? "text-white" : "text-paper"}`}>
-              {TOOL_META[screen].title}
-            </h2>
+            {TOOL_META[screen].title && (
+              <h2 className={`mt-2 text-base font-extrabold tracking-tight ${heroDark ? "text-white" : "text-paper"}`}>
+                {TOOL_META[screen].title}
+              </h2>
+            )}
             <p className={`mt-1.5 text-xs leading-relaxed ${heroDark ? "text-white/70" : "text-paper/65"}`}>
               {TOOL_META[screen].hint}
             </p>

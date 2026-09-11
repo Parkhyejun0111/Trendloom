@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
-import { fetchStyleImages, type StyleMood } from "@/lib/naver";
+import { fetchStyleImages } from "@/lib/naver";
 
 export const maxDuration = 60;
 
 export async function POST(req: Request) {
   const body = (await req.json()) as {
     keywords?: string[];
-    mood?: StyleMood;
+    mood?: string;
     perKeyword?: number;
   };
 
@@ -19,7 +19,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "키워드를 1개 이상 입력하세요." }, { status: 400 });
   }
 
-  const mood: StyleMood = body.mood ?? "street";
+  const mood = (body.mood ?? "").trim();
   const perKeyword = Math.min(80, Math.max(12, body.perKeyword ?? 40));
 
   const results = await Promise.all(

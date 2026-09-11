@@ -105,8 +105,9 @@ export const STYLE_MOODS = [
 
 export type StyleMood = (typeof STYLE_MOODS)[number]["id"];
 
-export function buildStyleQuery(keyword: string, mood: StyleMood) {
-  const suffix = STYLE_MOODS.find((m) => m.id === mood)?.suffix ?? "";
+/** moodSuffix 는 프리셋에서 고른 문구든 사용자가 직접 입력한 문구든 그냥 검색어 뒤에 붙는 텍스트다 */
+export function buildStyleQuery(keyword: string, moodSuffix: string) {
+  const suffix = moodSuffix.trim();
   return suffix ? `${keyword} ${suffix}` : keyword;
 }
 
@@ -117,10 +118,10 @@ export function buildStyleQuery(keyword: string, mood: StyleMood) {
  */
 export async function fetchStyleImages(
   keyword: string,
-  mood: StyleMood,
+  moodSuffix: string,
   display = 60,
 ): Promise<{ source: "naver" | "demo"; images: StyleImage[]; note?: string }> {
-  const query = buildStyleQuery(keyword, mood);
+  const query = buildStyleQuery(keyword, moodSuffix);
 
   if (hasKeys()) {
     try {
