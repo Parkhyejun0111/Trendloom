@@ -31,6 +31,20 @@ function endpoint(region: string, trendType: string) {
   return `https://api.pinterest.com/v5/trends/keywords/${region}/top/${trendType}`;
 }
 
+/**
+ * Pinterest 검색 딥링크 쿼리 생성 (기획서 16장 Query Template).
+ * 이미지 검색 API 승인 전까지는 이 쿼리로 공식 Pinterest 검색 페이지에 딥링크만 건다
+ * — 스크래핑도, 대체 이미지 생성도 하지 않는다.
+ */
+export function buildPinterestQueries(groupName: string): string[] {
+  const base = groupName.trim();
+  return [`${base} outfit`, `${base} styling`, `korean ${base} outfit`];
+}
+
+export function pinterestSearchUrl(query: string): string {
+  return `https://www.pinterest.com/search/pins/?q=${encodeURIComponent(query)}`;
+}
+
 export async function fetchPinterestTrendingKeywords(region = "KR", trendType: "growing" | "top" = "growing") {
   if (!hasToken()) return { status: "unavailable" as const, keywords: [] as string[] };
   try {

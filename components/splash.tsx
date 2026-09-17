@@ -64,7 +64,7 @@ export function Splash() {
         </h1>
 
         <p className="mt-2.5 text-xs font-extralight uppercase tracking-[0.42em] text-accent-soft">
-          AI for MD
+          Consumer Trend Intelligence
         </p>
 
         <span

@@ -3,26 +3,37 @@
 import { useEffect, useState } from "react";
 import { useObject } from "@ai-sdk/react";
 import { trendInsightSchema } from "@/lib/schemas";
-import { LIFECYCLE_LABEL_KR, type LifecycleStage } from "@/lib/trend-engine";
+import { LIFECYCLE_LABEL_KR, type LifecycleStage, type TrendDirection } from "@/lib/trend-engine";
 import type { VisualReference } from "@/lib/pinterest-trend";
+import type { StyleImage } from "@/lib/naver";
+import { segmentLabel, segmentToQueryString, type Segment } from "@/lib/segment";
 import { HorizontalBarChart, SignalBars, TrendLineChart } from "./charts";
 import { VisualSignal } from "./visual-signal";
 import { SourceBadge } from "./signal-card";
 import { Card, Pill, PrimaryButton, Skeleton } from "./ui";
 
 type Detail = {
-  trend: { slug: string; name: string; momentum: number; lifecycle: LifecycleStage };
+  trend: { slug: string; name: string; momentum: number; lifecycle: LifecycleStage; trendDirection: TrendDirection; changeRate: number };
   search: { status: "live" | "demo" | "unavailable"; change4w: number; change12w: number; series: number[] };
   shopping: { status: "live" | "demo" | "unavailable"; change4w: number; series: number[] };
   pinterest: { status: "live" | "demo" | "unavailable"; changeMom: number | null; series: number[] };
   segments: { label: string; growth: number }[];
   device: { mobilePct: number; pcPct: number };
   visuals: VisualReference[];
+  relatedKeywords: string[];
+  pinterestQueries: string[];
+  interimVisuals: { source: "naver" | "demo"; images: StyleImage[] };
 };
 
 const DECISIONS = ["관심 있음", "보류", "무관"] as const;
 
-export function TrendDetail({ slug, onBack }: { slug: string; onBack: () => void }) {
+const DIRECTION_LABEL: Record<TrendDirection, string> = {
+  RISING: "상승",
+  STABLE: "유지",
+  FALLING: "하락",
+};
+
+export function TrendDetail({ slug, segment, onBack }: { slug: string; segment: Segment; onBack: () => void }) {
   const [detail, setDetail] = useState<Detail | null>(null);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
@@ -35,10 +46,10 @@ export function TrendDetail({ slug, onBack }: { slug: string; onBack: () => void
 
   useEffect(() => {
     let cancelled = false;
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- slug 변경 시 상세 데이터를 다시 가져오는 표준 fetch-on-mount
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- slug/segment 변경 시 상세 데이터를 다시 가져오는 표준 fetch-on-mount
     setLoading(true);
     setErr(null);
-    fetch(`/api/trends/${slug}`)
+    fetch(`/api/trends/${slug}?${segmentToQueryString(segment)}`)
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
@@ -60,7 +71,7 @@ export function TrendDetail({ slug, onBack }: { slug: string; onBack: () => void
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slug]);
+  }, [slug, segment.gender, segment.ageCode, segment.weeks]);
 
   const strongestSegment = detail?.segments.slice().sort((a, b) => b.growth - a.growth)[0];
 
@@ -90,7 +101,10 @@ export function TrendDetail({ slug, onBack }: { slug: string; onBack: () => void
               ← TREND DETAIL
             </button>
             <h2 className="mt-3 text-xl font-extrabold tracking-tight text-white">{detail.trend.name}</h2>
-            <Pill>{LIFECYCLE_LABEL_KR[detail.trend.lifecycle]}</Pill>
+            <div className="mt-1 flex flex-wrap gap-1.5">
+              <Pill>{LIFECYCLE_LABEL_KR[detail.trend.lifecycle]}</Pill>
+              <Pill>{segmentLabel(segment)} 검색 관심도 {DIRECTION_LABEL[detail.trend.trendDirection]}</Pill>
+            </div>
             <div className="mt-4 text-center">
               <p className="text-5xl font-extrabold tracking-tight text-white">{Math.round(detail.trend.momentum)}</p>
               <p className="mt-0.5 text-[11px] font-bold tracking-widest text-white/60">TREND MOMENTUM</p>
@@ -102,7 +116,7 @@ export function TrendDetail({ slug, onBack }: { slug: string; onBack: () => void
             </div>
           </div>
 
-          <Card title="INTEREST TREND" hint="최근 12주 상대 관심도 (구간 내 최고값 = 100)">
+          <Card title="INTEREST TREND" hint={`${segmentLabel(segment)} · 최근 12주 상대 검색 관심도 (구간 내 최고값 = 100)`}>
             <TrendLineChart series={detail.search.series} />
             <p className="mt-2 text-center text-xs text-muted">
               12W CHANGE <span className="font-bold text-paper">{detail.search.change12w >= 0 ? "+" : ""}{detail.search.change12w}%</span>
@@ -119,9 +133,19 @@ export function TrendDetail({ slug, onBack }: { slug: string; onBack: () => void
             />
           </Card>
 
+          {!!detail.relatedKeywords.length && (
+            <Card title="RELATED KEYWORDS" hint="함께 검색되거나 인접한 스타일 키워드">
+              <div className="flex flex-wrap gap-2">
+                {detail.relatedKeywords.map((k) => (
+                  <Pill key={k}>{k}</Pill>
+                ))}
+              </div>
+            </Card>
+          )}
+
           <Card
             title="WHO IS MOVING?"
-            hint={strongestSegment ? `${strongestSegment.label} · STRONGEST SEGMENT` : undefined}
+            hint={strongestSegment ? `${strongestSegment.label} · STRONGEST SEGMENT (데모 — 세그먼트 간 비교 API 미연결)` : undefined}
           >
             <HorizontalBarChart items={detail.segments.map((s) => ({ label: s.label, value: s.growth }))} />
           </Card>
@@ -142,9 +166,15 @@ export function TrendDetail({ slug, onBack }: { slug: string; onBack: () => void
             </div>
           </Card>
 
-          <VisualSignal status={detail.pinterest.status} changeMom={detail.pinterest.changeMom} visuals={detail.visuals} />
+          <VisualSignal
+            status={detail.pinterest.status}
+            changeMom={detail.pinterest.changeMom}
+            visuals={detail.visuals}
+            pinterestQueries={detail.pinterestQueries}
+            interimVisuals={detail.interimVisuals}
+          />
 
-          <Card title="MD READ" className="card-ai">
+          <Card title="TREND READ" className="card-ai">
             {thinking && !insight && <Skeleton lines={2} />}
             {insight?.summary && (
               <div className="space-y-1.5">
@@ -160,7 +190,7 @@ export function TrendDetail({ slug, onBack }: { slug: string; onBack: () => void
             )}
           </Card>
 
-          <Card title="YOUR DECISION" hint="IS THIS RELEVANT TO YOUR BRAND?">
+          <Card title="YOUR DECISION" hint="관심 있는 스타일인가요?">
             <div className="flex flex-wrap gap-2">
               {DECISIONS.map((d) => (
                 <PrimaryButton key={d} className={decision === d ? "bg-trend-navy! text-white!" : ""} onClick={() => setDecision(d)}>

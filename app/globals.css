@@ -201,19 +201,6 @@ body {
   );
 }
 
-/* 페이지별 히어로 카드 — 위아래로 옅어지는 그라데이션 대신 flat 컬러 + 유리알 입체감(box-shadow)으로
-   깊이를 준다. app/page.tsx 에서 .glass-bead-soft-static 과 함께 쓴다.
-   board(네이비)는 진한 색이라 안의 글자를 흰색으로 바꿔야 한다 — app/page.tsx 의 heroDark 참고 */
-.page-hero-board {
-  background-color: var(--color-lime);
-}
-.page-hero-plan {
-  background-color: var(--color-pink);
-}
-.page-hero-tagger {
-  background-color: var(--color-mint);
-}
-
 /* Trend 화면 헤더 — 진한 네이비. 다른 페이지의 파스텔 히어로와 달리
    "지금 시장이 움직이고 있다"는 긴장감을 주려고 어두운 네이비를 쓴다.
    상단 로고 헤더와 히어로 카드가 같은 flat 컬러를 이어 써서(그라데이션 X)

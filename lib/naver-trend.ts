@@ -14,6 +14,8 @@ export type TrendSeriesResult = {
   /** 최근 순으로 정렬된 상대 관심도(0~100, 구간 내 최고값=100) */
   series: number[];
   currentScore: number;
+  /** 4주 전 비교 시점의 값 — DB persistence 시 previous_value 로 그대로 쓴다 */
+  previousValue: number;
   change4w: number;
   change12w: number;
   note?: string;
@@ -123,7 +125,7 @@ function seriesStats(series: number[]) {
   const base12 = baseNWeeksAgo(series, 12);
   const change4w = safePctChange(currentScore, base4 || currentScore);
   const change12w = safePctChange(currentScore, base12 || currentScore);
-  return { currentScore, change4w, change12w };
+  return { currentScore, previousValue: Math.round(base4), change4w, change12w };
 }
 
 /* ------------------------------------------------------------------ */
@@ -154,7 +156,7 @@ async function callSearchTrendHub(
   return res.json();
 }
 
-function dateRangeWeeksAgo(weeks: number) {
+export function dateRangeWeeksAgo(weeks: number) {
   const end = new Date();
   const start = new Date();
   start.setDate(start.getDate() - weeks * 7);
@@ -162,20 +164,20 @@ function dateRangeWeeksAgo(weeks: number) {
   return { startDate: fmt(start), endDate: fmt(end) };
 }
 
-/** 패션 MD 기본 세그먼트: mobile · 여성 · 20~30대 */
-const DEFAULT_SEGMENT = { device: "mo", ages: ["3", "4"], gender: "f" };
+export type DemographicSegment = { device?: string; ages: string[]; gender: string };
 
 export async function fetchSearchTrend(
   groupName: string,
   keywords: string[],
-  weeks = 12,
+  weeks: number,
+  segment: DemographicSegment,
 ): Promise<TrendSeriesResult> {
   if (hasHubKeys()) {
     try {
       const { startDate, endDate } = dateRangeWeeksAgo(weeks);
       const json = await callSearchTrendHub(
         [{ groupName, keywords }],
-        { startDate, endDate, timeUnit: "week", ...DEFAULT_SEGMENT },
+        { startDate, endDate, timeUnit: "week", device: segment.device ?? "mo", ages: segment.ages, gender: segment.gender },
       );
       const data: { period: string; ratio: number }[] = json?.results?.[0]?.data ?? [];
       const series = data.map((d) => Math.round(d.ratio));
@@ -183,7 +185,7 @@ export async function fetchSearchTrend(
       return { status: "live", series, ...seriesStats(series) };
     } catch (e) {
       console.error("[naver-trend:search]", e);
-      const series = demoSeries(`search:${groupName}`, weeks);
+      const series = demoSeries(`search:${groupName}:${segment.gender}:${segment.ages.join(",")}`, weeks);
       return {
         status: "demo",
         series,
@@ -192,7 +194,7 @@ export async function fetchSearchTrend(
       };
     }
   }
-  const series = demoSeries(`search:${groupName}`, weeks);
+  const series = demoSeries(`search:${groupName}:${segment.gender}:${segment.ages.join(",")}`, weeks);
   return { status: "demo", series, ...seriesStats(series) };
 }
 
@@ -203,7 +205,8 @@ export async function fetchSearchTrend(
 export async function fetchShoppingKeywordTrend(
   groupName: string,
   keywords: string[],
-  weeks = 12,
+  weeks: number,
+  segment: DemographicSegment,
 ): Promise<TrendSeriesResult> {
   // NAVER Shopping Insight 는 별도 엔드포인트/스코프가 필요하다. 현재는 검색 트렌드와
   // 동일한 API HUB 키 유무로 게이팅하되, 실패 시 검색과는 다른 시드로 독립적인 데모 시계열을 만든다.
@@ -212,7 +215,7 @@ export async function fetchShoppingKeywordTrend(
       const { startDate, endDate } = dateRangeWeeksAgo(weeks);
       const json = await callSearchTrendHub(
         [{ groupName, keywords }],
-        { startDate, endDate, timeUnit: "week", ...DEFAULT_SEGMENT },
+        { startDate, endDate, timeUnit: "week", device: segment.device ?? "mo", ages: segment.ages, gender: segment.gender },
       );
       const data: { period: string; ratio: number }[] = json?.results?.[0]?.data ?? [];
       const series = data.map((d) => Math.round(d.ratio));
@@ -220,7 +223,7 @@ export async function fetchShoppingKeywordTrend(
       return { status: "live", series, ...seriesStats(series) };
     } catch (e) {
       console.error("[naver-trend:shopping]", e);
-      const series = demoSeries(`shopping:${groupName}`, weeks);
+      const series = demoSeries(`shopping:${groupName}:${segment.gender}:${segment.ages.join(",")}`, weeks);
       return {
         status: "demo",
         series,
@@ -229,7 +232,7 @@ export async function fetchShoppingKeywordTrend(
       };
     }
   }
-  const series = demoSeries(`shopping:${groupName}`, weeks);
+  const series = demoSeries(`shopping:${groupName}:${segment.gender}:${segment.ages.join(",")}`, weeks);
   return { status: "demo", series, ...seriesStats(series) };
 }
 

@@ -98,6 +98,18 @@ export function calculateMomentum(scores: ChannelScores): {
   };
 }
 
+export type TrendDirection = "RISING" | "STABLE" | "FALLING";
+
+/** 방향 분류 임계값(%p) — 데이터 탐색 후 조정한다 (기획서 11.2) */
+export const DIRECTION_THRESHOLD = 8;
+
+/** 검색 관심도 변화율(change_rate) 기준 Rising/Stable/Falling 분류 — 기획서 11.2, 12장 화면 예시 */
+export function classifyDirection(changeRate: number): TrendDirection {
+  if (changeRate > DIRECTION_THRESHOLD) return "RISING";
+  if (changeRate < -DIRECTION_THRESHOLD) return "FALLING";
+  return "STABLE";
+}
+
 /** 최근 구간에서 상승한 주(週)의 비율 — persistence 근사치 */
 export function calculatePersistence(series: number[]) {
   if (series.length < 3) return 50;
